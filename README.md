@@ -45,28 +45,33 @@ See [orchestration-workflow](orchestration-workflow/orchestration-workflow.md) f
 
 ## TIPS AND TRICKS
 
-**Workflows**
-- Keep `AGENTS.md` under 150 lines — content beyond this is increasingly ignored
-- Use skills with clear `name` and `description` frontmatter for auto-discovery
-- Organize skills by feature domain (`weather-fetcher`, `weather-svg-creator`)
-- Use profiles to switch between safety levels (`conservative` for review, `trusted` for dev)
+![Shayan](!/tags/shayan.svg)
+
+■ **Workflows**
+- Keep [`AGENTS.md`](https://developers.openai.com/codex/guides/agents-md) under 150 lines — content beyond this is increasingly ignored
+- Use [skills](https://developers.openai.com/codex/skills) with clear `name` and `description` frontmatter for auto-discovery
+- Avoid context degradation, do manual compacting at max 50%
+- Use [profiles](https://developers.openai.com/codex/config-basic) to switch between safety levels (`conservative` for review, `trusted` for dev)
 - Use `AGENTS.override.md` for personal preferences without affecting the team
-- Break complex tasks into composable skills rather than monolithic instructions
-- Start with `approval_policy = "untrusted"` on new projects, then relax as trust builds
+- [git worktrees](https://git-scm.com/docs/git-worktree) for parallel development
 
-**Security**
-- Default to `sandbox_mode = "workspace-write"` — blocks network access while allowing file edits
-- Use `read-only` sandbox for code review and audit tasks
-- Pair `approval_policy = "never"` with `read-only` sandbox in CI (safety from isolation)
-- Never use `danger-full-access` + `never` approval without understanding the risks
-- Use `$ENV_VAR` references for MCP server secrets — never hardcode tokens in config.toml
-- Scope MCP servers to specific agents via `[agents.<name>]` config
+■ **Daily**
+- Update Codex CLI daily and start your day by reading the [changelog](https://github.com/openai/codex/blob/main/CHANGELOG.md)
 
-**Debugging**
-- Use `codex --profile conservative` when investigating unexpected behavior
-- Use `codex mcp list` and `codex features list` to inspect active integrations
-- Run `codex exec` with a simple prompt to validate CI configuration
-- Review auto-approved actions via `git log` and `git diff`
+■ **Hourly**
+- Commit often — as soon as a task is completed, commit
+
+■ **Utilities**
+- [iTerm](https://iterm2.com/) terminal instead of IDE (crash issue)
+- [Wispr Flow](https://wisprflow.ai) for voice prompting (10x productivity)
+- [codex-cli-voice-hooks](https://github.com/shanraisshan/codex-cli-voice-hooks) for Codex feedback
+- Explore `config.toml` features like [profiles](https://developers.openai.com/codex/config-basic), [sandbox modes](https://developers.openai.com/codex/cli/features), and [MCP](https://developers.openai.com/codex/mcp) for a personalized experience
+
+■ **Debugging**
+- Always ask Codex to run the terminal (you want to see logs of) as a background task for better debugging
+- Use MCP ([Chrome DevTools](https://developer.chrome.com/blog/chrome-devtools-mcp), [Playwright](https://github.com/microsoft/playwright-mcp)) to let Codex see browser console logs on its own
+- Provide screenshots of the issue
+- Use a different model for QA — e.g. [Claude Code](https://claude.com/claude-code) for plan and implementation review
 
 ## REPORTS
 
