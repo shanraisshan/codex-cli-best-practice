@@ -94,14 +94,14 @@ codex
 
 ![Codex Team](!/tags/codex-team.svg)
 
-- [Codex CLI — open-source local coding agent, first look (Fouad + Romain) | Apr 2025](https://www.youtube.com/watch?v=FUq9qRwrDrI) ● [Tweet](https://x.com/OpenAIDevs/status/1912556874211422572)
-- [AMA with Codex team — CLI, sandbox, agents (Embiricos, Fouad, Tibo + team) | May 2025](https://www.reddit.com/r/ChatGPT/comments/1ko3tp1/ama_with_openai_codex_team/) ● [Reddit](https://www.reddit.com/r/ChatGPT/comments/1ko3tp1/ama_with_openai_codex_team/)
-- [Skills in Codex — standardizing .agents/skills across agents (Embiricos) | Feb 2026](https://x.com/embirico/status/2002102889653924111) ● [Tweet](https://x.com/embirico/status/2002102889653924111)
-- [Unrolling the Codex agent loop — how Codex works internally (Bolin) | Jan 2026](https://x.com/OpenAIDevs/status/2014794871962533970) ● [Tweet](https://x.com/OpenAIDevs/status/2014794871962533970)
-- [How Codex is built — 90% self-built in Rust (Tibo, Pragmatic Engineer) | 17 Feb 2026](https://newsletter.pragmaticengineer.com/p/how-codex-is-built) ● [Post](https://newsletter.pragmaticengineer.com/p/how-codex-is-built)
-- [Dogfood — Codex team uses Codex to build Codex (Tibo, Stack Overflow) | 24 Feb 2026](https://stackoverflow.blog/2026/02/24/dogfood-so-nutritious-it-s-building-the-future-of-sdlcs/) ● [Podcast](https://stackoverflow.blog/2026/02/24/dogfood-so-nutritious-it-s-building-the-future-of-sdlcs/)
-- [Why humans are AI's biggest bottleneck — Codex product vision (Embiricos, Lenny's) | Feb 2026](https://www.lennysnewsletter.com/p/why-humans-are-ais-biggest-bottleneck) ● [Podcast](https://www.lennysnewsletter.com/p/why-humans-are-ais-biggest-bottleneck)
-- [How Codex team uses their coding agent (Tibo + Andrew, Every) | 18 Feb 2026](https://every.to/podcast/transcript-how-openai-s-codex-team-uses-their-coding-agent) ● [Podcast](https://every.to/podcast/transcript-how-openai-s-codex-team-uses-their-coding-agent)
+- Codex CLI — open-source local coding agent, first look (Fouad + Romain) | Apr 2025 ● [Tweet](https://x.com/OpenAIDevs/status/1912556874211422572)
+- AMA with Codex team — CLI, sandbox, agents (Embiricos, Fouad, Tibo + team) | May 2025 ● [Reddit](https://www.reddit.com/r/ChatGPT/comments/1ko3tp1/ama_with_openai_codex_team/)
+- Skills in Codex — standardizing .agents/skills across agents (Embiricos) | Feb 2026 ● [Tweet](https://x.com/embirico/status/2002102889653924111)
+- Unrolling the Codex agent loop — how Codex works internally (Bolin) | Jan 2026 ● [Tweet](https://x.com/OpenAIDevs/status/2014794871962533970)
+- How Codex is built — 90% self-built in Rust (Tibo, Pragmatic Engineer) | 17 Feb 2026 ● [Post](https://newsletter.pragmaticengineer.com/p/how-codex-is-built)
+- Dogfood — Codex team uses Codex to build Codex (Tibo, Stack Overflow) | 24 Feb 2026 ● [Podcast](https://stackoverflow.blog/2026/02/24/dogfood-so-nutritious-it-s-building-the-future-of-sdlcs/)
+- Why humans are AI's biggest bottleneck — Codex product vision (Embiricos, Lenny's) | Feb 2026 ● [Podcast](https://www.lennysnewsletter.com/p/why-humans-are-ais-biggest-bottleneck)
+- How Codex team uses their coding agent (Tibo + Andrew, Every) | 18 Feb 2026 ● [Podcast](https://every.to/podcast/transcript-how-openai-s-codex-team-uses-their-coding-agent)
 
 <a href="https://github.com/shanraisshan/claude-code-best-practice#billion-dollar-questions"><img src="!/tags/billion-dollar-questions.svg" alt="Billion-Dollar Questions"></a>
 

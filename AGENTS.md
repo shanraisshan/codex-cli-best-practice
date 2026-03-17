@@ -65,10 +65,13 @@ Define named profiles in `config.toml` under `[profiles.<name>]` to switch betwe
 
 ```bash
 codex --profile conservative   # read-only, asks before every action
+codex --profile development    # workspace-write sandbox, on-request approval
 codex --profile trusted        # no approval prompts, workspace-write sandbox
+codex --profile ci             # headless CI/CD mode
+codex --profile review         # read-only code review mode
 ```
 
-Set a default profile with `profile = "conservative"` at the top level of `config.toml`.
+Set a default profile with `profile = "conservative"` at the top level of `config.toml`. Example profile configs are in `examples/profiles/`.
 
 ## Workflow Best Practices
 
@@ -93,10 +96,19 @@ From experience with this repository:
 - `on-request`: Model decides when to ask for approval (recommended default)
 - `never`: All commands auto-approved; failures returned to model directly
 
+## MCP Servers
+
+MCP servers are configured under `[mcp_servers.*]` in `.codex/config.toml`. Currently configured:
+- `context7`: Documentation lookup via `@upstash/context7-mcp@latest`
+
 ## Documentation
 
-- `best-practice/codex-agents-md.md`: Detailed AGENTS.md authoring guide
+- `best-practice/codex-agents-md.md`: AGENTS.md authoring guide
+- `best-practice/codex-config.md`: Config, profiles, and MCP layout
+- `best-practice/codex-mcp.md`: MCP servers best practices
+- `best-practice/codex-skills.md`: Skills best practices
+- `best-practice/codex-subagents.md`: Subagents guide
 - `docs/SKILLS.md`: Skills system reference
-- `best-practice/codex-config.md`: Current config, profiles, and MCP layout
 - `orchestration-workflow/orchestration-workflow.md`: Weather system flow diagram
+- `examples/`: Example profile configs and CI/CD setup
 
