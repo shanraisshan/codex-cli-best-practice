@@ -79,23 +79,23 @@ All major workflows converge on the same architectural pattern: **Research → P
 ![Community](!/tags/community.svg)
 
 ■ **Planning (2)**
-- use [`/plan`](https://developers.openai.com/codex/cli/slash-commands) when you want an explicit plan — Codex may also plan automatically for multi-step tasks
+- use [/plan](https://developers.openai.com/codex/cli/slash-commands) when you want an explicit plan — Codex may also plan automatically for multi-step tasks
 - use [cross-model](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md) (e.g., Claude Code) to review your plan before execution
 
 ■ **Workflows (8)**
-- keep [`AGENTS.md`](https://developers.openai.com/codex/guides/agents-md) concise — 150 lines is a useful heuristic, but the actual limit is byte-based
-- use [skills](https://developers.openai.com/codex/skills) with clear `name` and `description` frontmatter for auto-discovery
-- use [`AGENTS.override.md`](https://developers.openai.com/codex/rules) for personal preferences without affecting the team
-- use [profiles](https://developers.openai.com/codex/config-basic) to switch between project-defined safety levels — in this repo, `conservative` and `trusted` are examples
+- keep [AGENTS.md](https://developers.openai.com/codex/guides/agents-md) concise — 150 lines is a useful heuristic, but the actual limit is byte-based
+- use [skills](https://developers.openai.com/codex/skills) with clear name and description frontmatter for auto-discovery
+- use [AGENTS.override.md](https://developers.openai.com/codex/rules) for personal preferences without affecting the team
+- use [profiles](https://developers.openai.com/codex/config-basic) to switch between project-defined safety levels — in this repo, conservative and trusted are examples
 - use the built-in skill creator to scaffold new skills, and document one invocation style consistently across the repo
-- start with [`on-request`](https://developers.openai.com/codex/cli/features) approval policy — only escalate to `never` when confident
-- use [`--fork`](https://developers.openai.com/codex/cli/features) to explore alternatives without losing your session, [`--resume`](https://developers.openai.com/codex/cli/features) to pick up where you left off
+- start with [on-request](https://developers.openai.com/codex/cli/features) approval policy — only escalate to never when confident
+- use [--fork](https://developers.openai.com/codex/cli/features) to explore alternatives without losing your session, [--resume](https://developers.openai.com/codex/cli/features) to pick up where you left off
 - commit often — as soon as a task is completed, commit
 
 ■ **Workflows Advanced (4)**
 - use [multi-agent](https://developers.openai.com/codex/multi-agent/) to spawn sub-agents for parallel fan-out work (GA — enabled by default)
-- use [`codex exec`](https://developers.openai.com/codex/noninteractive) for headless/CI pipelines
-- combine [sandbox modes](https://developers.openai.com/codex/cli/features) with [approval policies](https://developers.openai.com/codex/cli/features) — `workspace-write` + `on-request` is a good default
+- use [codex exec](https://developers.openai.com/codex/noninteractive) for headless/CI pipelines
+- combine [sandbox modes](https://developers.openai.com/codex/cli/features) with [approval policies](https://developers.openai.com/codex/cli/features) — workspace-write + on-request is a good default
 - [git worktrees](https://git-scm.com/docs/git-worktree) for parallel development
 
 ■ **Debugging (4)**
@@ -108,7 +108,7 @@ All major workflows converge on the same architectural pattern: **Research → P
 - [iTerm](https://iterm2.com/) terminal instead of IDE (crash issue)
 - [Wispr Flow](https://wisprflow.ai) for voice prompting (10x productivity)
 - [codex-cli-hooks](https://github.com/shanraisshan/codex-cli-hooks) for Codex feedback
-- explore `config.toml` features like [profiles](https://developers.openai.com/codex/config-basic), [sandbox modes](https://developers.openai.com/codex/cli/features), and [MCP](https://developers.openai.com/codex/mcp) for a personalized experience
+- explore config.toml features like [profiles](https://developers.openai.com/codex/config-basic), [sandbox modes](https://developers.openai.com/codex/cli/features), and [MCP](https://developers.openai.com/codex/mcp) for a personalized experience
 
 ■ **Daily (2)**
 - update Codex CLI daily and start your day by reading the [changelog](https://github.com/openai/codex/releases)
