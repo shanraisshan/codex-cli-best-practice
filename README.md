@@ -10,11 +10,11 @@ practice makes codex perfect
   <img src="!/codex-jumping.svg" alt="Codex CLI mascot jumping" width="120" height="100">
 </p>
 
-## CONCEPTS
+## 🧠 CONCEPTS
 
 | Feature | Location | Description |
 |---------|----------|-------------|
-| <img src="!/tags/c.svg" height="14"> [**Commands**](https://developers.openai.com/codex/cli/slash-commands) | `custom not supported` | Custom commands (`.codex/commands/`) are not yet supported — 29 built-in slash commands: `/plan`, `/skills`, `/fast`, `/fork`, `/review`, `/apps`, `/agent`, `/model`, `/personality`, `/ps`, `/debug-config`, and more |
+| <img src="!/tags/c.svg" height="14"> [**Commands**](https://developers.openai.com/codex/cli/slash-commands) | `custom not supported` | Custom commands (`.codex/commands/`) are not yet supported — 29 built-in slash commands: `/plan`, `/skills`, `/fast`, `/fork`, `/review`, `/apps`, and more |
 | <img src="!/tags/a.svg" height="14"> [**Subagents**](https://developers.openai.com/codex/subagents) | [`.codex/agents/<name>.toml`](.codex/agents/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-subagents.md) [![Implemented](!/tags/implemented.svg)](.codex/agents/) Custom agents registered under `[agents.<name>]` with dedicated TOML role configs, CSV batch processing, and multi-agent orchestration · Built-in: `default`, `worker`, `explorer` |
 | <img src="!/tags/s.svg" height="14"> [**Skills**](https://developers.openai.com/codex/skills) | [`.agents/skills/<name>/SKILL.md`](.agents/skills/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-skills.md) [![Implemented](!/tags/implemented.svg)](.agents/skills/) [Reference](docs/SKILLS.md) Reusable instruction packages with YAML frontmatter — invoke with `/skill-name` or preload into agents · Built-in: `$plan`, `$skill-creator`, `$web-search` · Distributed via [Plugins](https://developers.openai.com/codex/plugins) |
 | [**Plugins**](https://developers.openai.com/codex/plugins) | `.codex-plugin/plugin.json` | Distributable bundles combining skills + app integrations + MCP servers — local/personal [marketplace](https://developers.openai.com/codex/plugins/build) system · Built-in: `$plugin-creator` · Browse via `/plugins` or Codex App |
@@ -28,6 +28,10 @@ practice makes codex perfect
 | [**Multi-Agent**](https://developers.openai.com/codex/multi-agent/) | `config.toml` → `[agents]` | Spawn specialized sub-agents in parallel — fan-out work, collect results, synthesize · `max_threads` (default 6), `max_depth` (default 1) · GA (`multi_agent = true` by default) |
 | **AI Terms** | | [![Best Practice](!/tags/best-practice.svg)](https://github.com/shanraisshan/claude-code-codex-cursor-gemini/blob/main/reports/ai-terms.md) Agentic Engineering · Context Engineering · Vibe Coding |
 | [**Best Practices**](https://developers.openai.com/codex/learn/best-practices) | | Official best practices · [Prompt Engineering](https://platform.openai.com/docs/guides/prompt-engineering) · [Codex Guides](https://developers.openai.com/codex/overview) |
+
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
 
 [![Orchestration Workflow](!/tags/orchestration-workflow-hd.svg)](orchestration-workflow/orchestration-workflow.md)
 
@@ -46,10 +50,18 @@ codex
 
 > **Note:** This workflow is not 100% in sync with the [Claude Code Best Practice](https://github.com/shanraisshan/claude-code-best-practice) orchestration workflow. Codex CLI does not yet support custom commands (`.codex/commands/`), so the full <img src="!/tags/c.svg" height="14"> **Command** → <img src="!/tags/a.svg" height="14"> **Agent** → <img src="!/tags/s.svg" height="14"> **Skill** pattern is not possible. There is an experimental `tool/requestUserInput` in the Codex App Server docs and an internal `request_user_input` capability gated behind an under-development feature flag in codex-cli 0.115.0, but neither is publicly available yet.
 
-## DEVELOPMENT WORKFLOWS
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
+
+## ⚙️ DEVELOPMENT WORKFLOWS
 - [Cross-Model Claude Code + Codex](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md) [![Implemented](!/tags/implemented.svg)](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md)
 
-## TIPS AND TRICKS
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
+
+## 💡 TIPS AND TRICKS
 
 ![Community](!/tags/community.svg)
 
@@ -100,7 +112,15 @@ codex
 - Why humans are AI's biggest bottleneck — Codex product vision (Embiricos, Lenny's) | Feb 2026 ● [Podcast](https://www.lennysnewsletter.com/p/why-humans-are-ais-biggest-bottleneck)
 - How Codex team uses their coding agent (Tibo + Andrew, Every) | 18 Feb 2026 ● [Podcast](https://every.to/podcast/transcript-how-openai-s-codex-team-uses-their-coding-agent)
 
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
+
 <a href="https://github.com/shanraisshan/claude-code-best-practice#billion-dollar-questions"><img src="!/tags/billion-dollar-questions.svg" alt="Billion-Dollar Questions"></a>
+
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
 
 ## Other Repos
 
