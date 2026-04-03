@@ -1,154 +1,99 @@
 # Best Practice: Skills
 
-Skills are the primary mechanism for extending Codex CLI with reusable, composable instruction packages. They follow the SKILL.md open standard.
+Skills are the primary mechanism for extending Codex CLI with reusable, composable instruction packages. They follow the `SKILL.md` standard and work best when they are narrow, trigger cleanly, and keep context small.
 
-## Two Skill Patterns
+## Core Pattern
 
-### 1. User-Invocable Skills (Slash Commands)
+Codex uses skills in two ways:
 
-Triggered explicitly by the user via `/skill-name`:
+1. Explicit invocation: mention the skill directly in the prompt. In the CLI or IDE, use `/skills` or type `$` to insert a skill mention.
+2. Implicit invocation: Codex chooses the skill when the task matches the skill `description`.
+
+That makes the `description` field the most important part of the skill metadata.
+
+## Minimal Frontmatter
+
+Use only the required frontmatter unless you have a documented reason to add more:
 
 ```yaml
 ---
-name: deploy
-description: Deploy to target environment
-argument-hint: "[env] [version]"
-allowed-tools: Bash, Read
+name: docs-helper
+description: Verify framework API details before making code changes or writing migration guidance.
 ---
 ```
 
-**Best for**: Workflows the user triggers on demand (deploy, review, generate).
+The rest of the skill should focus on inputs, workflow, and expected outputs.
 
-### 2. Agent-Preloaded Skills (Background Knowledge)
+## Structure for Progressive Disclosure
 
-Defined as regular skills, then attached to an agent through the current
-agent configuration model:
+Organize skills so Codex can load extra detail only when needed:
 
-```toml
-# .codex/config.toml
-[agents.api-developer]
-description = "Builds and reviews HTTP APIs"
-config_file = "agents/api-developer.toml"
-```
-
-```toml
-# .codex/agents/api-developer.toml
-model = "o4-mini"
-skills = ["api-conventions", "error-handling"]
-
-prompt = """
-Work on backend APIs for this project.
-"""
-```
-
-**Best for**: Domain knowledge that agents need but users never invoke directly.
-
-## Frontmatter Guidelines
-
-### Write Descriptive `description` Fields
-The description drives auto-discovery. Be specific about when the skill should be used:
-
-```yaml
-# Good: specific trigger condition
-description: Review TypeScript files for type safety issues and suggest fixes
-
-# Bad: vague, matches too many contexts
-description: Help with TypeScript
-```
-
-### Scope `allowed-tools` Tightly
-Only grant tools the skill actually needs:
-
-```yaml
-# Good: minimal permissions
-allowed-tools: Read, Grep, Glob
-
-# Bad: overly permissive
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep, WebFetch
-```
-
-### Choose the Right Model
-Use cheaper models for simple tasks:
-
-```yaml
-# Fast analysis tasks
-model: o4-mini
-
-# Complex reasoning tasks
-model: o3
-```
-
-## Skill Organization
-
-```
+```text
 .agents/skills/
-  deploy/
-    SKILL.md          # Main skill instructions
-  pr-review/
+  docs-helper/
     SKILL.md
-  code-standards/     # Agent-preloaded, not user-invocable
-    SKILL.md
-  security-audit/
-    SKILL.md
+    references/
+    scripts/
+    assets/
+    agents/
+      openai.yaml
 ```
 
-### Naming Conventions
-- Use kebab-case for directory names: `pr-review`, not `prReview`
-- Keep names short but descriptive
-- Avoid generic names like `helper` or `utils`
+- Put core workflow instructions in `SKILL.md`.
+- Put deep reference material in `references/`.
+- Put deterministic helpers in `scripts/`.
+- Use `agents/openai.yaml` for optional UI metadata, invocation policy, and tool dependencies.
 
-## String Substitutions
+## Write Better Descriptions
 
-Use `$ARGUMENTS` for the full argument string, `$0` for the first positional arg:
+Good descriptions act like trigger conditions:
 
-```markdown
----
-name: fix-issue
-argument-hint: "[issue-number]"
----
+```yaml
+# Good
+description: Review TypeScript changes for type-safety regressions and missing runtime validation.
 
-# Fix Issue Skill
-
-Fetch issue #$0 from GitHub and implement a fix:
-1. Run `gh issue view $0` to read the issue
-2. Analyze the reported problem
-3. Implement and test the fix
+# Bad
+description: Help with TypeScript.
 ```
 
-## Composing Skills
+Be specific about when the skill should trigger and, when useful, when it should not.
 
-### Skill Chains via Commands
-Use a command to orchestrate multiple skills:
+## Design for Current Codex Behavior
 
-```markdown
-<!-- commands/full-review.md -->
-1. Invoke /security-audit on the changed files
-2. Invoke /pr-review for code quality
-3. Combine findings into a single report
-```
+- Treat skills as reusable workflows, not as custom slash commands.
+- Prefer `/skills` and `$skill-name` mentions for explicit invocation examples.
+- Use plugins to distribute reusable skills beyond a single repo.
+- Use `[[skills.config]]` in `~/.codex/config.toml` to disable a skill without deleting it.
 
-### Agent + Skills
-Agents with preloaded skills get domain expertise without user intervention:
+Example:
 
 ```toml
-# .codex/config.toml
-[agents.backend-dev]
-description = "Handles backend development tasks"
-config_file = "agents/backend-dev.toml"
+[[skills.config]]
+path = "/path/to/skill/SKILL.md"
+enabled = false
 ```
 
-```toml
-# .codex/agents/backend-dev.toml
-model = "o4-mini"
-skills = ["api-conventions", "database-patterns", "error-handling"]
+## Optional Metadata
+
+Use `agents/openai.yaml` when you need richer metadata:
+
+```yaml
+interface:
+  display_name: "Docs Helper"
+  short_description: "Checks APIs before code changes"
+
+policy:
+  allow_implicit_invocation: false
 ```
+
+This is the right place for UI presentation and invocation policy. Do not rely on stale or undocumented frontmatter fields.
 
 ## Anti-Patterns
 
 | Anti-Pattern | Fix |
 |---|---|
-| Putting all instructions in AGENTS.md | Extract into focused skills |
-| Skills longer than 100 lines | Split into multiple skills or use linked docs |
-| Skills that do everything | One skill, one responsibility |
-| Forgetting `user-invocable: false` for knowledge skills | Always set for agent-only skills |
-| Hardcoding values that vary by environment | Use `$ARGUMENTS` for dynamic values |
+| Treating skills as `/skill-name` slash commands | Document explicit invocation via `/skills` or `$skill-name` mentions |
+| Using undocumented frontmatter like `user-invocable`, `allowed-tools`, or `context: fork` | Stick to current documented `SKILL.md` + `agents/openai.yaml` patterns |
+| Treating `skills = [...]` as the main way to attach domain knowledge | Let skills trigger by description, or manage availability with `[[skills.config]]` |
+| Putting all instructions in `AGENTS.md` | Extract focused workflows into skills |
+| Writing broad descriptions that match everything | Make `description` a precise trigger condition |

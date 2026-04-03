@@ -1,150 +1,118 @@
 # Skills System Reference
 
-Skills are reusable instruction packages that extend Codex CLI's capabilities. They follow the open **SKILL.md standard**, making them portable and shareable across projects.
+Skills are reusable instruction packages that extend Codex CLI with focused workflows and domain expertise. They follow the open `SKILL.md` standard and are the authoring format behind reusable Codex workflows.
 
-## SKILL.md File Format
+## Skill Structure
 
-Skills live in `.agents/skills/<name>/SKILL.md`. Each skill is a Markdown file with YAML frontmatter:
+Skills live in `.agents/skills/<name>/` and must include `SKILL.md`. A skill directory can also include supporting material for progressive disclosure:
+
+```text
+.agents/skills/
+  my-skill/
+    SKILL.md
+    scripts/
+    references/
+    assets/
+    agents/
+      openai.yaml
+```
+
+- `SKILL.md`: Required instructions plus metadata
+- `scripts/`: Optional executable helpers
+- `references/`: Optional docs and examples
+- `assets/`: Optional templates or static resources
+- `agents/openai.yaml`: Optional UI, policy, and dependency metadata
+
+## Minimal `SKILL.md`
+
+Codex requires only `name` and `description` in YAML frontmatter:
 
 ```markdown
 ---
 name: my-skill
-description: When to invoke this skill — used for auto-discovery
-argument-hint: "[file-path]"
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
-model: o4-mini
+description: Explain exactly when this skill should and should not trigger.
 ---
 
-# My Skill Instructions
+# My Skill
 
-Detailed instructions for what the skill should do when invoked...
+Instructions Codex should follow when this skill is activated.
 ```
 
-## Frontmatter Fields
+The `description` is the trigger surface for implicit invocation, so write it as a precise "when should this fire?" statement.
 
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `name` | string | Directory name | Display name and `/slash-command` trigger |
-| `description` | string | — | Purpose description; used for auto-discovery ranking |
-| `argument-hint` | string | — | Autocomplete hint shown after `/name` (e.g., `[issue-number]`) |
-| `disable-model-invocation` | bool | `false` | Prevents automatic invocation; must be explicitly called |
-| `user-invocable` | bool | `true` | If `false`, hidden from `/` menu (background knowledge only) |
-| `allowed-tools` | string | — | Comma-separated tools allowed without permission prompts |
-| `model` | string | Inherited | Model to use: `o4-mini`, `o3`, `gpt-4.1` |
-| `context` | string | — | Set to `fork` to run in isolated subagent context |
-| `agent` | string | `general-purpose` | Subagent type when `context: fork` |
-| `hooks` | object | — | Lifecycle hooks scoped to this skill |
+## How Codex Uses Skills
 
-## String Substitutions
+Codex can activate a skill in two ways:
 
-Skills support dynamic variable injection:
+1. Explicit invocation: mention the skill directly in your prompt. In the CLI or IDE, use `/skills` or type `$` to insert a skill mention.
+2. Implicit invocation: Codex chooses the skill when your task matches the skill `description`.
 
-| Variable | Expands To |
-|---|---|
-| `$ARGUMENTS` | Full argument string passed after the skill name |
-| `$0` | First positional argument |
-| `$1`, `$2`, ... | Subsequent positional arguments |
-
-**Example**: If user types `/deploy staging v2.1`, then `$ARGUMENTS` = `staging v2.1`, `$0` = `staging`, `$1` = `v2.1`.
+Codex uses progressive disclosure for skills. It starts with metadata such as `name`, `description`, path, and optional `agents/openai.yaml` data, then loads the full `SKILL.md` only when the skill is selected.
 
 ## Built-in Skills
 
-Codex CLI ships with several built-in skills prefixed with `$`:
+Codex bundles system skills that are available out of the box. Common examples include:
 
-### $plan
-Structured planning skill. Creates a step-by-step plan before executing complex tasks. Automatically invoked when tasks appear multi-step.
+- `$plan`
+- `$skill-creator`
+- `$skill-installer`
 
-### $skill-creator
-Meta-skill that generates new SKILL.md files. Invoke with `/skill-creator` and describe what the skill should do.
-
-### $web-search
-Web search capability. Fetches and processes web content to answer questions requiring current information.
+Built-in skill inventory can evolve across releases, so prefer examples over hard-coded lists.
 
 ## Discovery Paths
 
-Codex CLI discovers skills from multiple locations, in priority order:
+Codex discovers skills from these locations:
 
-1. **Project skills**: `./.agents/skills/` in the current project (scanned up to repo root)
-2. **User skills**: `~/.agents/skills/` for personal cross-project skills
-3. **Built-in skills**: Shipped with Codex CLI (`$plan`, `$skill-creator`, etc.)
+1. Repository skills from the current working directory up to the repository root: `.agents/skills/`
+2. User skills: `~/.agents/skills/`
+3. Admin skills: `/etc/codex/skills`
+4. System skills bundled with Codex
 
-When multiple skills share a name, the most local version wins (project > user > built-in).
+Codex scans repository locations from the current working directory upward. If two skills share the same name, Codex does not merge them.
 
-## Skill Patterns
+## Distribute Skills with Plugins
 
-### User-Invocable Skill (Slash Command)
-```yaml
----
-name: deploy
-description: Deploy the application to a target environment
-argument-hint: "[environment] [version]"
-allowed-tools: Bash, Read
----
-```
-User triggers with `/deploy production v2.0`.
+Skills are the authoring format. Plugins are the installable distribution unit for reusable skills, apps, and MCP integrations.
 
-### Agent-Preloaded Skill (Background Knowledge)
-```yaml
----
-name: code-standards
-description: Team coding standards and conventions
-user-invocable: false
----
-```
-Loaded into agent context via `[agents.<name>]` role configuration in `.codex/config.toml` and a companion TOML file:
+Use direct skill folders for repo-local workflows and day-to-day authoring. Package skills as plugins when you want to distribute them, bundle them with apps or MCP config, or publish them through a marketplace.
+
+## Enable or Disable Skills
+
+Use `[[skills.config]]` entries in `~/.codex/config.toml` to disable a skill without deleting it:
 
 ```toml
-# .codex/config.toml
-[agents.backend-dev]
-description = "Handles backend development tasks"
-config_file = "agents/backend-dev.toml"
+[[skills.config]]
+path = "/path/to/skill/SKILL.md"
+enabled = false
 ```
 
-```toml
-# .codex/agents/backend-dev.toml
-model = "o4-mini"
-skills = ["code-standards"]
-```
+Restart Codex after changing skill config.
 
-Never shown in `/` menu.
+## Optional Metadata with `agents/openai.yaml`
 
-### Forked Skill (Isolated Execution)
+Use `agents/openai.yaml` for optional UI, policy, and dependency metadata instead of relying on undocumented frontmatter fields:
+
 ```yaml
----
-name: security-audit
-description: Run security analysis in isolated context
-context: fork
-agent: security-reviewer
-allowed-tools: Bash, Read, Grep, Glob
----
+interface:
+  display_name: "Docs Helper"
+  short_description: "Verifies framework APIs before code changes"
+
+policy:
+  allow_implicit_invocation: false
+
+dependencies:
+  tools:
+    - type: mcp
+      value: openaiDeveloperDocs
+      description: OpenAI Docs MCP server
+      transport: streamable_http
+      url: https://developers.openai.com/mcp
 ```
-Runs in a separate subagent context to avoid polluting the main conversation.
 
-## Example: Complete Skill
+## Best Practices
 
-```markdown
----
-name: pr-review
-description: Review a pull request and provide structured feedback
-argument-hint: "[pr-number]"
-allowed-tools: Bash, Read, Grep, Glob
-model: o4-mini
----
-
-# PR Review Skill
-
-Review pull request #$0 and provide structured feedback.
-
-## Steps
-1. Fetch the PR diff using `gh pr diff $0`
-2. Read all changed files for full context
-3. Analyze for: correctness, security issues, performance, style
-4. Output a structured review with severity ratings
-
-## Output Format
-Use this template:
-- **Critical**: Issues that must be fixed
-- **Warning**: Issues that should be addressed
-- **Suggestion**: Optional improvements
-- **Praise**: What was done well
-```
+- Keep each skill focused on one job.
+- Prefer instructions over scripts unless you need deterministic behavior or external tooling.
+- Write `description` fields as trigger conditions, not marketing copy.
+- Use `references/` and `scripts/` to keep `SKILL.md` concise.
+- Use plugins for reusable distribution outside a single repo.
