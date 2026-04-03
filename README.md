@@ -55,7 +55,20 @@ codex
 </p>
 
 ## ⚙️ DEVELOPMENT WORKFLOWS
-- [Cross-Model Claude Code + Codex](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md) [![Implemented](!/tags/implemented.svg)](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md)
+
+All major workflows converge on the same architectural pattern: **Research → Plan → Execute → Review → Ship**
+
+| Name | ★ | Uniqueness | Plan | <img src="!/tags/a.svg" height="14"> | <img src="!/tags/s.svg" height="14"> |
+|------|---|------------|------|---|---|
+| [Superpowers](https://github.com/obra/superpowers) | 134k | ![TDD-first](https://img.shields.io/badge/TDD--first-ddf4ff) ![Iron Laws](https://img.shields.io/badge/Iron_Laws-ddf4ff) ![agent-agnostic](https://img.shields.io/badge/agent--agnostic-ddf4ff) | <img src="!/tags/s.svg" height="14"> [writing-plans](https://github.com/obra/superpowers/tree/main/skills/writing-plans) | 5 | 14 |
+| [Spec Kit](https://github.com/github/spec-kit) | 85k | ![spec-driven](https://img.shields.io/badge/spec--driven-ddf4ff) ![constitution](https://img.shields.io/badge/constitution-ddf4ff) ![--ai-skills](https://img.shields.io/badge/----ai--skills-ddf4ff) | <img src="!/tags/s.svg" height="14"> [$speckit-plan](https://github.com/github/spec-kit) | 0 | 0 |
+| [gstack](https://github.com/garrytan/gstack) | 63k | ![role personas](https://img.shields.io/badge/role_personas-ddf4ff) ![/codex review](https://img.shields.io/badge/%2Fcodex_review-ddf4ff) ![parallel sprints](https://img.shields.io/badge/parallel_sprints-ddf4ff) | <img src="!/tags/s.svg" height="14"> [autoplan](https://github.com/garrytan/gstack/tree/main/autoplan) | 0 | 31 |
+| [Get Shit Done](https://github.com/gsd-build/get-shit-done) | 47k | ![fresh 200K contexts](https://img.shields.io/badge/fresh_200K_contexts-ddf4ff) ![wave execution](https://img.shields.io/badge/wave_execution-ddf4ff) ![--codex flag](https://img.shields.io/badge/----codex_flag-ddf4ff) | <img src="!/tags/a.svg" height="14"> [gsd-planner](https://github.com/gsd-build/get-shit-done/blob/main/agents/gsd-planner.md) | 21 | 0 |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 23k | ![teams orchestration](https://img.shields.io/badge/teams_orchestration-ddf4ff) ![tmux workers](https://img.shields.io/badge/tmux_workers-ddf4ff) ![omc team N:codex](https://img.shields.io/badge/omc_team_N%3Acodex-ddf4ff) | <img src="!/tags/s.svg" height="14"> [ralplan](https://github.com/Yeachan-Heo/oh-my-codex/tree/main/skills/ralplan) | 19 | 36 |
+| [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin) | 13k | ![Compound Learning](https://img.shields.io/badge/Compound_Learning-ddf4ff) ![Multi-Platform CLI](https://img.shields.io/badge/Multi--Platform_CLI-ddf4ff) ![install --to codex](https://img.shields.io/badge/install_----to_codex-ddf4ff) | <img src="!/tags/s.svg" height="14"> [ce-plan](https://github.com/EveryInc/compound-engineering-plugin/tree/main/plugins/compound-engineering/skills/ce-plan) | 49 | 42 |
+
+### Others
+- [Cross-Model (Claude Code + Codex) Workflow](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md) [![Implemented](!/tags/implemented.svg)](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md)
 
 <p align="center">
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
