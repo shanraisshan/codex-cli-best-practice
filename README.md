@@ -74,56 +74,160 @@ All major workflows converge on the same architectural pattern: **Research → P
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
 </p>
 
-## 💡 TIPS AND TRICKS
+## 💡 TIPS AND TRICKS (50)
+
+[Prompting](#tips-prompting) · [Planning](#tips-planning) · [AGENTS.md](#tips-agentsmd) · [Agents](#tips-agents) · [Skills](#tips-skills) · [Hooks](#tips-hooks) · [Workflows](#tips-workflows) · [Advanced](#tips-workflows-advanced) · [Git / PR](#tips-git-pr) · [Debugging](#tips-debugging) · [Utilities](#tips-utilities) · [Daily](#tips-daily)
 
 ![Community](!/tags/community.svg)
 
-■ **Planning (2)**
-- use [/plan](https://developers.openai.com/codex/cli/slash-commands) when you want an explicit plan — Codex may also plan automatically for multi-step tasks
-- use [cross-model](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md) (e.g., Claude Code) to review your plan before execution
+<a id="tips-prompting"></a>■ **Prompting (3)**
 
-■ **Workflows (8)**
-- keep [AGENTS.md](https://developers.openai.com/codex/guides/agents-md) concise — 150 lines is a useful heuristic, but the actual limit is byte-based
-- use [skills](https://developers.openai.com/codex/skills) with clear name and description frontmatter for auto-discovery
-- use [AGENTS.override.md](https://developers.openai.com/codex/rules) for personal preferences without affecting the team
-- use [profiles](https://developers.openai.com/codex/config-basic) to switch between project-defined safety levels — in this repo, conservative and trusted are examples
-- use the built-in skill creator to scaffold new skills, and document one invocation style consistently across the repo
-- start with [on-request](https://developers.openai.com/codex/cli/features) approval policy — only escalate to never when confident
-- use [--fork](https://developers.openai.com/codex/cli/features) to explore alternatives without losing your session, [--resume](https://developers.openai.com/codex/cli/features) to pick up where you left off
-- commit often — as soon as a task is completed, commit
+| Tip |
+|-----|
+| challenge Codex — "prove to me this works" and have Codex diff between main and your branch |
+| after a mediocre fix — "knowing everything you know now, scrap this and implement the elegant solution" |
+| Codex fixes most bugs by itself — paste the bug, say "fix", don't micromanage how |
 
-■ **Workflows Advanced (4)**
-- use [multi-agent](https://developers.openai.com/codex/multi-agent/) to spawn sub-agents for parallel fan-out work (GA — enabled by default)
-- use [codex exec](https://developers.openai.com/codex/noninteractive) for headless/CI pipelines
-- combine [sandbox modes](https://developers.openai.com/codex/cli/features) with [approval policies](https://developers.openai.com/codex/cli/features) — workspace-write + on-request is a good default
-- [git worktrees](https://git-scm.com/docs/git-worktree) for parallel development
+<a id="tips-planning"></a>■ **Planning (4)**
 
-■ **Debugging (4)**
-- always ask Codex to run the terminal (you want to see logs of) as a background task for better debugging
-- use MCP ([Chrome DevTools](https://developer.chrome.com/blog/chrome-devtools-mcp), [Playwright](https://github.com/microsoft/playwright-mcp)) to let Codex see browser console logs on its own
-- make it a habit to take screenshots and share with Codex whenever you are stuck with any issue
-- use a different model for QA — e.g. [Claude Code](https://github.com/shanraisshan/claude-code-best-practice) for plan and implementation review
+| Tip |
+|-----|
+| use [/plan](https://developers.openai.com/codex/cli/slash-commands) when you want an explicit plan — Codex may also plan automatically for multi-step tasks |
+| always make a phase-wise gated plan, with each phase having multiple tests (unit, automation, integration) |
+| spin up a second Codex (or use [cross-model](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md)) to review your plan as a staff engineer |
+| write detailed specs and reduce ambiguity before handing work off — the more specific you are, the better the output |
 
-■ **Utilities (4)**
-- [iTerm](https://iterm2.com/) terminal instead of IDE (crash issue)
-- [Wispr Flow](https://wisprflow.ai) for voice prompting (10x productivity)
-- [codex-cli-hooks](https://github.com/shanraisshan/codex-cli-hooks) for Codex feedback
-- explore config.toml features like [profiles](https://developers.openai.com/codex/config-basic), [sandbox modes](https://developers.openai.com/codex/cli/features), and [MCP](https://developers.openai.com/codex/mcp) for a personalized experience
+<a id="tips-agentsmd"></a>■ **AGENTS.md (5)**
 
-■ **Daily (2)**
-- update Codex CLI daily and start your day by reading the [changelog](https://github.com/openai/codex/releases)
-- follow [Tibo](https://x.com/thsottiaux), [Embiricos](https://x.com/embirico), [Jason](https://x.com/jxnlco), [Romain](https://x.com/romainhuet), [Dominik](https://x.com/dkundel), [Fouad](https://x.com/fouadmatin), [Bolin](https://x.com/bolinfest), [OpenAI Devs](https://x.com/OpenAIDevs) on X
+| Tip |
+|-----|
+| keep [AGENTS.md](https://developers.openai.com/codex/guides/agents-md) concise — 150 lines is a useful heuristic, but the actual limit is byte-based (32 KiB) |
+| use [AGENTS.override.md](https://developers.openai.com/codex/rules) for personal preferences without affecting the team |
+| any developer should be able to launch Codex, say "run the tests" and it works on the first try — if it doesn't, your AGENTS.md is missing essential setup/build/test commands |
+| keep codebases clean and finish migrations — partially migrated frameworks confuse models that might pick the wrong pattern |
+| use [config.toml](https://developers.openai.com/codex/config-basic) for harness-enforced behavior (approval policy, sandbox, model) — don't put behavioral rules in AGENTS.md when config.toml settings are deterministic |
+
+<a id="tips-agents"></a><img src="!/tags/a.svg" height="14"> **Agents (3)**
+
+| Tip |
+|-----|
+| have feature specific [sub-agents](https://developers.openai.com/codex/subagents) with [skills](https://developers.openai.com/codex/skills) instead of general qa, backend engineer |
+| use [multi-agent](https://developers.openai.com/codex/multi-agent/) to throw more compute at a problem — offload tasks to keep your main context clean and focused |
+| use test time compute — separate context windows make results better; one agent can cause bugs and another can find them |
+
+<a id="tips-skills"></a><img src="!/tags/s.svg" height="14"> **Skills (7)**
+
+| Tip |
+|-----|
+| use [skills](https://developers.openai.com/codex/skills) with clear name and description frontmatter for auto-discovery |
+| skills are folders, not files — use references/, scripts/, examples/ subdirectories for [progressive disclosure](https://developers.openai.com/codex/skills) |
+| build a Gotchas section in every skill — highest-signal content, add Codex's failure points over time |
+| skill description field is a trigger, not a summary — write it for the model ("when should I fire?") |
+| don't state the obvious in skills — focus on what pushes Codex out of its default behavior |
+| don't railroad Codex in skills — give goals and constraints, not prescriptive step-by-step instructions |
+| use the built-in skill creator to scaffold new skills, and document one invocation style consistently across the repo |
+
+<a id="tips-hooks"></a>■ **Hooks (2)**
+
+| Tip |
+|-----|
+| use [hooks](https://developers.openai.com/codex/hooks) for logging, security scanning, and validation — requires codex_hooks = true feature flag |
+| use hooks for auto-formatting code — Codex generates well-formatted code, the hook handles the last 10% to avoid CI failures |
+
+<a id="tips-workflows"></a>■ **Workflows (7)**
+
+| Tip |
+|-----|
+| vanilla Codex is better than any workflows with smaller tasks |
+| use [profiles](https://developers.openai.com/codex/config-basic) to switch between project-defined safety levels — in this repo, conservative and trusted are examples |
+| start with [on-request](https://developers.openai.com/codex/cli/features) approval policy — only escalate to never when confident |
+| use [--fork](https://developers.openai.com/codex/cli/features) to explore alternatives without losing your session, [--resume](https://developers.openai.com/codex/cli/features) to pick up where you left off |
+| use [/model](https://developers.openai.com/codex/cli/slash-commands) to select model, [/fast](https://developers.openai.com/codex/speed) to toggle speed mode |
+| /rename important sessions and /resume them later — label each instance when running multiple Codex instances simultaneously |
+| use Esc Esc to undo when Codex goes off-track instead of trying to fix it in the same context |
+
+<a id="tips-workflows-advanced"></a>■ **Workflows Advanced (5)**
+
+| Tip |
+|-----|
+| use [multi-agent](https://developers.openai.com/codex/multi-agent/) to spawn sub-agents for parallel fan-out work (GA — enabled by default) |
+| use [codex exec](https://developers.openai.com/codex/noninteractive) for headless/CI pipelines |
+| combine [sandbox modes](https://developers.openai.com/codex/cli/features) with [approval policies](https://developers.openai.com/codex/cli/features) — workspace-write + on-request is a good default |
+| [git worktrees](https://git-scm.com/docs/git-worktree) for parallel development |
+| use ASCII diagrams a lot to understand your architecture |
+
+<a id="tips-git-pr"></a>■ **Git / PR (3)**
+
+| Tip | Source |
+|-----|--------|
+| keep PRs small and focused — one feature per PR, easier to review and revert | |
+| always squash merge PRs — clean linear history, one commit per feature, easy git revert and git bisect | |
+| commit often — as soon as a task is completed, commit | ![Shayan](!/tags/community-shayan.svg) |
+
+<a id="tips-debugging"></a>■ **Debugging (5)**
+
+| Tip | Source |
+|-----|--------|
+| always ask Codex to run the terminal (you want to see logs of) as a background task for better debugging | |
+| use MCP ([Chrome DevTools](https://developer.chrome.com/blog/chrome-devtools-mcp), [Playwright](https://github.com/microsoft/playwright-mcp)) to let Codex see browser console logs on its own | |
+| make it a habit to take screenshots and share with Codex whenever you are stuck with any issue | ![Shayan](!/tags/community-shayan.svg) |
+| use a different model for QA — e.g. [Claude Code](https://github.com/shanraisshan/claude-code-best-practice) for plan and implementation review | |
+| agentic search (glob + grep) beats RAG — code drifts out of sync and permissions are complex | |
+
+<a id="tips-utilities"></a>■ **Utilities (4)**
+
+| Tip | Source |
+|-----|--------|
+| [iTerm](https://iterm2.com/)/[Ghostty](https://ghostty.org/)/[tmux](https://github.com/tmux/tmux) terminals instead of IDE ([VS Code](https://code.visualstudio.com/)/[Cursor](https://www.cursor.com/)) | |
+| [Wispr Flow](https://wisprflow.ai) for voice prompting (10x productivity) | |
+| [codex-cli-hooks](https://github.com/shanraisshan/codex-cli-hooks) for Codex feedback | ![Shayan](!/tags/community-shayan.svg) |
+| explore config.toml features like [profiles](https://developers.openai.com/codex/config-basic), [sandbox modes](https://developers.openai.com/codex/cli/features), and [MCP](https://developers.openai.com/codex/mcp) for a personalized experience | |
+
+<a id="tips-daily"></a>■ **Daily (2)**
+
+| Tip | Source |
+|-----|--------|
+| update Codex CLI daily | ![Shayan](!/tags/community-shayan.svg) |
+| start your day by reading the [changelog](https://github.com/openai/codex/releases) | ![Shayan](!/tags/community-shayan.svg) |
 
 ![Codex](!/tags/codex.svg)
 
-- Codex CLI — open-source local coding agent, first look (Fouad + Romain) | Apr 2025 ● [Tweet](https://x.com/OpenAIDevs/status/1912556874211422572)
-- AMA with Codex team — CLI, sandbox, agents (Embiricos, Fouad, Tibo + team) | May 2025 ● [Reddit](https://www.reddit.com/r/ChatGPT/comments/1ko3tp1/ama_with_openai_codex_team/)
-- Skills in Codex — standardizing .agents/skills across agents (Embiricos) | Feb 2026 ● [Tweet](https://x.com/embirico/status/2002102889653924111)
-- Unrolling the Codex agent loop — how Codex works internally (Bolin) | Jan 2026 ● [Tweet](https://x.com/OpenAIDevs/status/2014794871962533970)
-- How Codex is built — 90% self-built in Rust (Tibo, Pragmatic Engineer) | 17 Feb 2026 ● [Post](https://newsletter.pragmaticengineer.com/p/how-codex-is-built)
-- Dogfood — Codex team uses Codex to build Codex (Tibo, Stack Overflow) | 24 Feb 2026 ● [Podcast](https://stackoverflow.blog/2026/02/24/dogfood-so-nutritious-it-s-building-the-future-of-sdlcs/)
-- Why humans are AI's biggest bottleneck — Codex product vision (Embiricos, Lenny's) | Feb 2026 ● [Podcast](https://www.lennysnewsletter.com/p/why-humans-are-ais-biggest-bottleneck)
-- How Codex team uses their coding agent (Tibo + Andrew, Every) | 18 Feb 2026 ● [Podcast](https://every.to/podcast/transcript-how-openai-s-codex-team-uses-their-coding-agent)
+| Article / Tweet | Source |
+|-----------------|--------|
+| How Codex is built — 90% self-built in Rust (Tibo, Pragmatic Engineer) \| 17 Feb 2026 | [![Tibo](!/tags/tibo.svg)](https://x.com/thsottiaux) |
+| Skills in Codex — standardizing .agents/skills across agents (Embiricos) \| Feb 2026 | [![Embiricos](!/tags/embiricos.svg)](https://x.com/embirico) |
+| Unrolling the Codex agent loop — how Codex works internally (Bolin) \| Jan 2026 | [Tweet](https://x.com/OpenAIDevs/status/2014794871962533970) |
+| AMA with Codex team — CLI, sandbox, agents (Embiricos, Fouad, Tibo + team) \| May 2025 | [Reddit](https://www.reddit.com/r/ChatGPT/comments/1ko3tp1/ama_with_openai_codex_team/) |
+| Codex CLI — open-source local coding agent, first look (Fouad + Romain) \| Apr 2025 | [Tweet](https://x.com/OpenAIDevs/status/1912556874211422572) |
+
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
+
+## 🎬 VIDEOS / PODCASTS
+
+| Video / Podcast | Source | Link |
+|-----------------|--------|------|
+| The power user's guide to Codex — parallelizing workflows, planning, context engineering (Embiricos) \| 2026 \| How I AI | [![Embiricos](!/tags/embiricos.svg)](https://x.com/embirico) | [Podcast](https://open.spotify.com/episode/6RNqTaOb5ly3zgQCGB23fE) |
+| Scaffolding is coping not scaling, and other lessons from Codex (Tibo) \| 2026 \| Dev Interrupted | [![Tibo](!/tags/tibo.svg)](https://x.com/thsottiaux) | [Podcast](https://linearb.io/dev-interrupted/podcast/openai-codex-thibault-sottiaux-agentic-autonomy) |
+| How Codex team uses their coding agent (Tibo + Andrew) \| 18 Feb 2026 \| Every | [![Tibo](!/tags/tibo.svg)](https://x.com/thsottiaux) | [Podcast](https://every.to/podcast/transcript-how-openai-s-codex-team-uses-their-coding-agent) |
+| Dogfood — Codex team uses Codex to build Codex (Tibo) \| 24 Feb 2026 \| Stack Overflow | [![Tibo](!/tags/tibo.svg)](https://x.com/thsottiaux) | [Podcast](https://stackoverflow.blog/2026/02/24/dogfood-so-nutritious-it-s-building-the-future-of-sdlcs/) |
+| Why humans are AI's biggest bottleneck — Codex product vision (Embiricos) \| Feb 2026 \| Lenny's Podcast | [![Embiricos](!/tags/embiricos.svg)](https://x.com/embirico) | [Podcast](https://www.lennysnewsletter.com/p/why-humans-are-ais-biggest-bottleneck) |
+| OpenAI and Codex (Tibo + Ed Bayes) \| 29 Jan 2026 \| Software Engineering Daily | [![Tibo](!/tags/tibo.svg)](https://x.com/thsottiaux) | [Podcast](https://softwareengineeringdaily.com/2026/01/29/openai-and-codex-with-thibault-sottiaux-and-ed-bayes/) |
+
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
+
+## 🔔 SUBSCRIBE
+
+| Source | Name | Badge |
+|--------|------|-------|
+| ![Reddit](https://img.shields.io/badge/-FF4500?style=flat&logo=reddit&logoColor=white) | [r/ChatGPT](https://www.reddit.com/r/ChatGPT/), [r/OpenAI](https://www.reddit.com/r/OpenAI/), [r/Codex](https://www.reddit.com/r/Codex/) | ![Codex](!/tags/codex.svg) |
+| ![X](https://img.shields.io/badge/-000?style=flat&logo=x&logoColor=white) | [OpenAI](https://x.com/OpenAI), [OpenAI Devs](https://x.com/OpenAIDevs), [Tibo](https://x.com/thsottiaux), [Embiricos](https://x.com/embirico), [Jason](https://x.com/jxnlco), [Romain](https://x.com/romainhuet), [Dominik](https://x.com/dkundel), [Fouad](https://x.com/fouadmatin), [Bolin](https://x.com/bolinfest) | ![Codex](!/tags/codex.svg) |
+| ![X](https://img.shields.io/badge/-000?style=flat&logo=x&logoColor=white) | [Jesse Kriss](https://x.com/obra) ([Superpowers](https://github.com/obra/superpowers)), [Garry Tan](https://x.com/garrytan) ([gstack](https://github.com/garrytan/gstack)), [Kieran Klaassen](https://x.com/kieranklaassen) ([Compound Eng](https://github.com/EveryInc/compound-engineering-plugin)), [Lex Christopherson](https://x.com/official_taches) ([GSD](https://github.com/gsd-build/get-shit-done)), [Yeachan Heo](https://x.com/bellman_ych) ([oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex)), [Andrej Karpathy](https://x.com/karpathy) | ![Community](!/tags/community.svg) |
+| ![YouTube](https://img.shields.io/badge/-F00?style=flat&logo=youtube&logoColor=white) | [OpenAI](https://www.youtube.com/@OpenAI) | ![Codex](!/tags/codex.svg) |
+| ![YouTube](https://img.shields.io/badge/-F00?style=flat&logo=youtube&logoColor=white) | [Lenny's Podcast](https://www.youtube.com/@LennysPodcast), [The Pragmatic Engineer](https://www.youtube.com/@mrgergelyorosz), [Every](https://www.youtube.com/@every_media) | ![Community](!/tags/community.svg) |
 
 <p align="center">
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
