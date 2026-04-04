@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ./.codex/hooks/scripts/hooks.py --hook SessionStart",
+            "command": "python3 .codex/hooks/scripts/hooks.py --hook SessionStart",
             "timeout": 10,
             "statusMessage": "Loading project context"
           }
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ./.codex/hooks/scripts/hooks.py --hook PreToolUse",
+            "command": "python3 .codex/hooks/scripts/hooks.py --hook PreToolUse",
             "timeout": 10,
             "statusMessage": "Running pre-tool-use hook"
           }
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ./.codex/hooks/scripts/hooks.py --hook PostToolUse",
+            "command": "python3 .codex/hooks/scripts/hooks.py --hook PostToolUse",
             "timeout": 10,
             "statusMessage": "Running post-tool-use hook"
           }
@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ./.codex/hooks/scripts/hooks.py --hook Stop",
+            "command": "python3 .codex/hooks/scripts/hooks.py --hook Stop",
             "timeout": 10,
             "statusMessage": "Running session stop hook"
           }
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ./.codex/hooks/scripts/hooks.py --hook UserPromptSubmit",
+            "command": "python3 .codex/hooks/scripts/hooks.py --hook UserPromptSubmit",
             "timeout": 10,
             "statusMessage": "Running user prompt submit hook"
           }
