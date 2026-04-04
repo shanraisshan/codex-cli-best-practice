@@ -2,113 +2,69 @@
 
 This file provides guidance to Codex CLI when working with code in this repository.
 
-## Repository Overview
+## What This Is
 
-This is a best practices repository for OpenAI Codex CLI configuration, demonstrating patterns for skills, agents, orchestration workflows, and project-scoped configuration. It serves as a reference implementation rather than an application codebase.
+A best practices reference repository for **Codex CLI** (v0.118.0+) and **Claude Code**, demonstrating the **Agent → Skill** orchestration pattern through a weather data system example. This is a documentation and configuration reference, not a traditional application codebase.
 
-## Key Components
+Maintained by Shayan Raees (@shanraisshan). Companion repos: [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [codex-cli-hooks](https://github.com/shanraisshan/codex-cli-hooks), [claude-code-hooks](https://github.com/shanraisshan/claude-code-hooks).
 
-### Weather System (Example Workflow)
+## Architecture
 
-A demonstration of the **Agent → Skill** orchestration pattern:
-- `weather-agent` (`.codex/agents/weather-agent.toml`): Entry point — fetches temperature from Open-Meteo API, invokes renderer skill
-- `weather-svg-creator` skill (`.agents/skills/weather-svg-creator/SKILL.md`): Invoked by agent — creates SVG weather card
+The repo demonstrates four interconnected systems:
 
-The orchestration flow: agent fetches temperature from Open-Meteo (using caller-provided unit, defaults to Celsius), then invokes `/weather-svg-creator` to render the SVG output. See `orchestration-workflow/orchestration-workflow.md` for the complete flow diagram.
+1. **Config** (`.codex/config.toml`) — TOML-based layered config with 5 profiles (conservative, development, trusted, ci, review), MCP server registration, and agent definitions. Project-level overrides user-level (`~/.codex/config.toml`); CLI flags override both.
 
-### Skill Definition Structure
+2. **Agents** (`.codex/agents/*.toml`) — Registered under `[agents.<name>]` in config.toml with dedicated role files. The weather-agent fetches temperature from Open-Meteo API and delegates rendering to a skill.
 
-Skills live in `.agents/skills/<name>/SKILL.md` and use YAML frontmatter:
-- `name`: Display name (defaults to directory name)
-- `description`: When to invoke the skill (used for auto-discovery)
+3. **Skills** (`.agents/skills/<name>/SKILL.md`) — Reusable instruction packages with YAML frontmatter (`name`, `description`). Discovered progressively from cwd up to `/etc/codex/skills`. Invoked via `/skills`, `$skill-name`, or auto-triggered by description match.
 
-Each skill directory may also contain:
-- `scripts/`: Executable code the skill invokes
-- `references/`: Documentation the skill references
-- `assets/`: Templates, resources, or static files
-- `agents/openai.yaml`: Optional appearance and dependency metadata
+4. **Hooks** — Event-driven Python scripts. Claude Code has 27 hooks (`.claude/settings.json` → `.claude/hooks/scripts/hooks.py`); Codex CLI has 5 (`.codex/hooks.json`). Hooks play audio feedback per event with cross-platform support (macOS/Linux/Windows).
 
-Codex discovers skills via progressive disclosure — it starts with metadata and loads full instructions only when a skill is activated.
+### Orchestration Flow
 
-### Configuration System
-
-Codex CLI uses TOML-based configuration at two levels:
-- **User-level**: `~/.codex/config.toml` — personal defaults across all projects
-- **Project-level**: `.codex/config.toml` — team-shared, project-scoped overrides (loaded only when the project is trusted)
-
-### Configuration Hierarchy
-
-1. `.codex/config.toml`: Team-shared project settings (checked in)
-2. `~/.codex/config.toml`: Personal user-level settings
-3. CLI flags (`--model`, `--ask-for-approval`, `--sandbox`): Override both config files
-4. `--config key=value`: One-off overrides from the command line
-
-### Agents and Skills
-
-Skills are discovered from multiple scopes in order of precedence:
-1. `$CWD/.agents/skills` — current working directory (most specific)
-2. `$CWD/../.agents/skills` — parent directories up to repo root
-3. `$REPO_ROOT/.agents/skills` — repository root
-4. `$HOME/.agents/skills` — user-level personal skills
-5. `/etc/codex/skills` — system/admin-level shared skills
-
-Agents are registered under `[agents.<name>]` in `.codex/config.toml` and can
-optionally point to dedicated role files in `.codex/agents/*.toml`.
-
-## AGENTS.md Discovery
-
-Codex walks from the Git root down to the current working directory, loading `AGENTS.override.md` then `AGENTS.md` in each directory. Files closer to the current directory appear later in the combined prompt and take precedence. The combined size is capped at 32 KiB by default (`project_doc_max_bytes`).
-
-## Profiles
-
-Define named profiles in `config.toml` under `[profiles.<name>]` to switch between configurations quickly:
-
-```bash
-codex --profile conservative   # read-only, asks before every action
-codex --profile development    # workspace-write sandbox, on-request approval
-codex --profile trusted        # no approval prompts, workspace-write sandbox
-codex --profile ci             # headless CI/CD mode
-codex --profile review         # read-only code review mode
+```
+User Prompt → weather-agent (fetches temp from Open-Meteo)
+                → /weather-svg-creator skill (renders SVG card)
+                    → orchestration-workflow/weather.svg
+                    → orchestration-workflow/output.md
 ```
 
-Set a default profile with `profile = "conservative"` at the top level of `config.toml`. Example profile configs are in `examples/profiles/`.
+Run it: `codex` then prompt "Fetch the current weather for Dubai in Celsius and create the SVG weather card output using the repo."
 
-## Workflow Best Practices
+## Key Directories
 
-From experience with this repository:
+- `best-practice/` — 6 comprehensive guides: config, agents-md, skills, subagents, hooks, mcp
+- `orchestration-workflow/` — Weather system example with flow diagram and generated outputs
+- `docs/SKILLS.md` — Skills system reference
+- `examples/` — Profile configs and CI/CD integration examples
+- `AGENTS.md` — Project guidance loaded hierarchically by Codex (cwd to git root, capped at 32 KiB)
 
-- Keep AGENTS.md under 150 lines for reliable adherence
-- Use skills with clear `name` and `description` frontmatter for auto-discovery
-- Organize skills by feature domain (e.g., `weather-svg-creator`)
-- Use profiles to switch between safety levels (`conservative` for review, `trusted` for development)
-- Use `AGENTS.override.md` for personal preferences without affecting the team
-- Break complex tasks into composable skills rather than monolithic instructions
+## Configuration Quick Reference
 
-### Sandbox Modes
+**Profiles** (`codex --profile <name>`):
+| Profile | Model | Sandbox | Approval |
+|---------|-------|---------|----------|
+| conservative | o4-mini | read-only | untrusted |
+| development | o4-mini | workspace-write | on-request |
+| trusted | o3 | workspace-write | never |
+| ci | o4-mini | read-only | never |
+| review | o3 | read-only | on-request |
 
-- `read-only`: Only reads files, no writes or network access
-- `workspace-write`: Reads and writes within the project, sandboxed network
-- `danger-full-access`: Unrestricted access (use with caution)
+## Git Commit Convention
 
-### Approval Policies
+**One file, one commit** — do NOT bundle multiple file changes into a single commit. Each file gets its own commit with a descriptive message specific to that file's changes.
 
-- `untrusted`: Only safe read commands auto-approved; everything else asks
-- `on-request`: Model decides when to ask for approval (recommended default)
-- `never`: All commands auto-approved; failures returned to model directly
+For example, if `README.md`, `best-practice/codex-agents-md.md`, and a skill file all changed:
+- Commit 1: `git add README.md` → commit with README-specific message
+- Commit 2: `git add best-practice/codex-agents-md.md` → commit with agents-doc-specific message
+- Commit 3: `git add .agents/skills/weather-svg-creator/SKILL.md` → commit with skill-specific message
 
-## MCP Servers
+This keeps git history clean and makes it easy to review, revert, or cherry-pick individual changes.
 
-MCP servers are configured under `[mcp_servers.*]` in `.codex/config.toml`. Currently configured:
-- `context7`: Documentation lookup via `@upstash/context7-mcp@latest`
+## Content Guidelines
 
-## Documentation
-
-- `best-practice/codex-agents-md.md`: AGENTS.md authoring guide
-- `best-practice/codex-config.md`: Config, profiles, and MCP layout
-- `best-practice/codex-mcp.md`: MCP servers best practices
-- `best-practice/codex-skills.md`: Skills best practices
-- `best-practice/codex-subagents.md`: Subagents guide
-- `docs/SKILLS.md`: Skills system reference
-- `orchestration-workflow/orchestration-workflow.md`: Weather system flow diagram
-- `examples/`: Example profile configs and CI/CD setup
-
+When editing best-practice guides or documentation in this repo:
+- Keep AGENTS.md under 150 lines (32 KiB byte cap)
+- Skill descriptions should be triggers ("when should I fire?"), not summaries
+- Use profiles for safety switching; keep behavioral rules out of AGENTS.md when config.toml is deterministic
+- Skills should stay under 150 lines with progressive disclosure (core in SKILL.md, details in `references/`)
