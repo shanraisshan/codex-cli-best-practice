@@ -177,6 +177,11 @@ Run the test suite:
 python3 -m unittest tests.test_hooks -v
 ```
 
+## Voice
+
+website used to generate sounds: https://elevenlabs.io/
+voice used: Adam - American, Dark and Tough
+
 ## Future Extensibility
 
 This project can be extended by:
