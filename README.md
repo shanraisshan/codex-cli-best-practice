@@ -243,3 +243,13 @@ All major workflows converge on the same architectural pattern: **Research → P
 ---
 
 <a href="https://openai.com/form/codex-for-oss/"><img src="!/tags/codex-for-oss.svg" alt="Codex for Open Source" width="720"></a>
+
+<p align="center">
+  <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
+</p>
+
+## <img src="!/tags/sponsor-heart.svg" width="22" height="22" align="center"> Sponsor My Work
+
+If you like my work, buy me a doodh patti 🍵 on
+
+<a href="https://buy.polar.sh/polar_cl_R6wjUESl8RiJD0iVaTyStBUV6WNuYvDmLJ0si1XXj4C"><img src="!/tags/polar.svg" alt="Polar" width="40" height="40" align="center"></a> <a href="https://buy.polar.sh/polar_cl_R6wjUESl8RiJD0iVaTyStBUV6WNuYvDmLJ0si1XXj4C"><strong>Polar</strong></a>
