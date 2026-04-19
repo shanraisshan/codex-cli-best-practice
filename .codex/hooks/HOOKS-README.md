@@ -7,7 +7,7 @@ Codex CLI provides **5 hooks** via hooks.json:
 
 | # | Hook | Event Type | Config File | Description |
 |:-:|------|------------|-------------|-------------|
-| 1 | `SessionStart` | `SessionStart` | `hooks.json` | Runs once at session start — injects context + plays sound |
+| 1 | `SessionStart` | `SessionStart` | `hooks.json` | Runs once at session start (source: `startup \| resume \| clear`) — injects context + plays sound |
 | 2 | `PreToolUse` | `PreToolUse` | `hooks.json` | Runs before a tool executes — plays sound |
 | 3 | `PostToolUse` | `PostToolUse` | `hooks.json` | Runs after a tool completes — plays sound |
 | 4 | `Stop` | `stop` | `hooks.json` | Runs when the session ends — plays sound |
@@ -33,11 +33,13 @@ python3 .codex/hooks/scripts/hooks.py --hook UserPromptSubmit
 
 ### SessionStart Context Injection
 
-The SessionStart hook outputs context to **stdout**, which feeds directly into the model's context window. This includes:
-- Current date/time
-- Git branch name
-- Working tree status (clean or uncommitted changes)
-- Working directory path
+The SessionStart hook outputs context to **stdout**, which feeds directly into the model's context window. It branches on the `source` input field (v0.120.0+):
+
+| `source` | Behavior |
+|---|---|
+| `startup` | Fresh process — inject full context |
+| `resume` | `/resume` or `codex resume <id>` — inject full context |
+| `clear` | Session recreated by `/clear` — skip heavy context so `/clear` stays fast |
 
 ## Prerequisites
 
