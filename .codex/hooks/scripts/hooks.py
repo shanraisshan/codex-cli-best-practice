@@ -5,6 +5,7 @@ Codex CLI Hook Handler
 This script handles hooks from Codex CLI and plays sounds.
 Codex CLI supports 5 hooks:
   1. SessionStart - via hooks.json (v0.114.0+)
+     - source matcher: startup | resume | clear (clear added in v0.120.0+)
   2. PreToolUse - via hooks.json (v0.117.0+)
   3. PostToolUse - via hooks.json (v0.117.0+)
   4. Stop - via hooks.json (v0.114.0+)
@@ -263,15 +264,26 @@ def log_hook_data(hook_data):
         print(f"Failed to log hook_data: {e}", file=sys.stderr)
 
 
-def get_session_context():
+def get_session_context(input_data):
     """
     Gather context information for SessionStart hook.
     This output goes to stdout and feeds into the model's context.
 
+    Branches on the `source` field (v0.120.0+):
+      - startup : fresh process launch
+      - resume  : /resume or `codex resume <id>`
+      - clear   : session recreated by /clear (skip heavy context)
+
+    Args:
+        input_data: Parsed JSON dict from stdin, or None
+
     Returns:
         String of context information
     """
-    return "hooks context: run"
+    source = (input_data or {}).get("source", "startup")
+    if source == "clear":
+        return ""
+    return f"hooks context: run (source={source})"
 
 
 def parse_args(argv):
@@ -334,7 +346,7 @@ def main():
 
         # SessionStart: Output context to stdout (feeds into model context)
         if event_type == "SessionStart":
-            context = get_session_context()
+            context = get_session_context(input_data)
             if context:
                 print(context)
 
