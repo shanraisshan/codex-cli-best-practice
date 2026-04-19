@@ -1,6 +1,12 @@
 {
   "permissions": {
     "allow": [
+      "Edit(*)",
+      "Write(*)",
+      "NotebookEdit(*)",
+      "Bash(*)",
+      "WebFetch(domain:*)",
+      "WebSearch",
       "WebFetch(domain:developers.openai.com)"
     ]
   },
