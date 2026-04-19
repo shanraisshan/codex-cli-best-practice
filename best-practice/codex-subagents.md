@@ -241,6 +241,54 @@ code_mapper trace the responsible code path, and ui_fixer implement the smallest
 once the failure mode is clear.
 ```
 
+## Path-Based Agent Addressing (v0.121.0+)
+
+Every agent has a canonical path from the root thread. Spawned children extend
+the parent path:
+
+```
+/root                       # the root session
+/root/task1                 # spawned from root
+/root/task1/reviewer        # spawned from /root/task1
+```
+
+Segments are lowercase letters, digits, and underscores only. `root`, `.`, and
+`..` are reserved.
+
+Inside a given agent, siblings may be addressed by bare name (`reviewer`) OR
+canonical path (`/root/task1/reviewer`); cross-branch targets must use the
+canonical path.
+
+This addressing is primarily tool-facing (not a command you type). Codex uses
+it inside the structured messaging APIs below.
+
+## Structured Inter-Agent Messaging (v0.121.0+)
+
+The v2 agent tool set replaces the older v1 spawn/result shape:
+
+| Tool | Purpose |
+|---|---|
+| `spawn_agent` | Spawn a child; returns `{ task_name, nickname }` |
+| `send_message` | Enqueue a message to an existing agent (no turn triggered) |
+| `followup_task` | Enqueue a message AND trigger a turn (`interrupt: true` preempts) |
+| `wait_agent` | Wait for any mailbox update in the current tree (`timeout_ms` optional) |
+| `list_agents` | List live agents, optionally filtered by `path_prefix` |
+| `close_agent` | Close an agent and its descendants |
+| `resume_agent` | Resume a previously closed agent by id |
+
+Key behaviors to know:
+
+- `spawn_agent` takes `fork_turns: "none" | "all" | <int>` to control context inheritance.
+- `followup_task` cannot target `/root` — you cannot reassign the root thread.
+- `wait_agent` returns `{ message, timed_out }` without message content — the
+  content is fetched separately from the target's mailbox.
+- `list_agents` returns `agent_status` values `pending_init | running | interrupted | shutdown | not_found | { completed } | { errored }`.
+
+User-visible equivalents:
+
+- `/agent` — switch between active agent threads in the TUI.
+- `/resume` — jump to a session by ID or name (v0.119.0+).
+
 ## CSV Batch Processing (Experimental)
 
 Use `spawn_agents_on_csv` for many similar tasks that map to one row per work item. Codex reads the CSV, spawns one worker per row, waits for the batch to finish, and exports combined results.
