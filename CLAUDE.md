@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A best practices reference repository for **Codex CLI** (v0.118.0+) and **Claude Code**, demonstrating the **Agent → Skill** orchestration pattern through a weather data system example. This is a documentation and configuration reference, not a traditional application codebase.
+A best practices reference repository for **Codex CLI** (v0.121.0+) and **Claude Code**, demonstrating the **Agent → Skill** orchestration pattern through a weather data system example. This is a documentation and configuration reference, not a traditional application codebase.
 
 Maintained by Shayan Raees (@shanraisshan). Companion repos: [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [codex-cli-hooks](https://github.com/shanraisshan/codex-cli-hooks), [claude-code-hooks](https://github.com/shanraisshan/claude-code-hooks).
 
@@ -33,7 +33,7 @@ Run it: `codex` then prompt "Fetch the current weather for Dubai in Celsius and 
 
 ## Key Directories
 
-- `best-practice/` — 6 comprehensive guides: config, agents-md, skills, subagents, hooks, mcp
+- `best-practice/` — 8 comprehensive guides: config, agents-md, skills, subagents, hooks, mcp, marketplace, memory
 - `orchestration-workflow/` — Weather system example with flow diagram and generated outputs
 - `docs/SKILLS.md` — Skills system reference
 - `examples/` — Profile configs and CI/CD integration examples
