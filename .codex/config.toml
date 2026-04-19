@@ -58,6 +58,30 @@ args = ["-y", "@upstash/context7-mcp@latest"]
 # args = ["--connection-string", "$DATABASE_URL"]
 # env = { DATABASE_URL = "" }
 
+# --- Example: Parallel tool calls (v0.121.0+) ---
+# MCP tools are serialized by default. Opt in per server when tools are
+# safe to run concurrently (e.g. read-only lookups):
+# [mcp_servers.docs]
+# enabled = true
+# command = "docs-server"
+# supports_parallel_tool_calls = true
+
+################################################################################
+# Memories (v0.119.0+)
+################################################################################
+
+# Cross-session memory pipeline — off by default. Enable and tune here.
+# Reset via /memories in the TUI or `codex debug clear-memories`.
+# See best-practice/codex-memory.md for the full reference.
+
+# [features]
+# memories = true
+
+# [memories]
+# use_memories                     = true
+# generate_memories                = true
+# no_memories_if_mcp_or_web_search = false
+
 ################################################################################
 # Profiles
 ################################################################################
