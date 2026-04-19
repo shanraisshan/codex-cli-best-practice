@@ -11,6 +11,15 @@ Codex uses skills in two ways:
 
 That makes the `description` field the most important part of the skill metadata.
 
+### `$` Menu (v0.121.0+)
+
+Typing `$` in the TUI composer opens a unified mention menu that lists your
+skills alongside apps and plugins. Skills show with their `name` field; the
+`description` field is used to rank matches as you type.
+
+Because the same menu mixes apps, skills, and plugins, skill names should be
+concrete and distinguishable (e.g. `ts-migration-helper`, not `helper`).
+
 ## Minimal Frontmatter
 
 Use only the required frontmatter unless you have a documented reason to add more:
