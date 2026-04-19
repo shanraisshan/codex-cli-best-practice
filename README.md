@@ -252,4 +252,4 @@ All major workflows converge on the same architectural pattern: **Research → P
 
 If you like my work, buy me a doodh patti 🍵 on
 
-<a href="https://buy.polar.sh/polar_cl_R6wjUESl8RiJD0iVaTyStBUV6WNuYvDmLJ0si1XXj4C"><img src="!/tags/polar.svg" alt="Polar" width="40" height="40" align="center"></a> <a href="https://buy.polar.sh/polar_cl_R6wjUESl8RiJD0iVaTyStBUV6WNuYvDmLJ0si1XXj4C"><strong>Polar</strong></a>
+<a href="https://buy.polar.sh/polar_cl_fTn59g14xsMqJdXnPYtPmHVTdm6qnrNMnhXuB2JZJDL"><img src="!/tags/polar.svg" alt="Polar" width="40" height="40" align="center"></a> <a href="https://buy.polar.sh/polar_cl_fTn59g14xsMqJdXnPYtPmHVTdm6qnrNMnhXuB2JZJDL"><strong>Polar</strong></a>
