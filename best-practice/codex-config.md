@@ -69,6 +69,54 @@ Set a default profile with `profile = "conservative"` at the top level.
 | `on-request` | Model decides when it should ask | Everyday development |
 | `never` | Never asks; failures come straight back to the model | Non-interactive runs and tightly controlled automation |
 
+## Memories (v0.119.0+)
+
+Enable the cross-session memory pipeline:
+
+```toml
+[features]
+memories = true
+
+[memories]
+use_memories      = true
+generate_memories = true
+```
+
+Full reference: [`codex-memory.md`](codex-memory.md).
+
+## Unix Socket Allowlists (macOS, v0.121.0+)
+
+Under Seatbelt, Unix sockets are denied by default. Allowlist specific paths
+per-permission-profile:
+
+```toml
+[permissions.development.network]
+enabled = true
+
+[permissions.development.network.unix_sockets]
+"/tmp/example.sock"        = "allow"
+"/var/run/myservice.sock"  = "allow"
+```
+
+Paths are matched as subpath prefixes, so any socket created under an allowed
+directory is covered. Use `dangerously_allow_all_unix_sockets = true` only in
+throwaway sandboxes.
+
+## Secure Devcontainer (v0.121.0+)
+
+Codex ships a hardened VS Code Dev Container profile for customer environments.
+It is a standalone `.devcontainer/devcontainer.secure.json` + `Dockerfile.secure`
+— not a `[profiles.*]` entry in `config.toml`:
+
+```bash
+devcontainer up --workspace-folder . \
+  --config .devcontainer/devcontainer.secure.json
+```
+
+The image installs `bubblewrap` setuid, sets `CODEX_ENABLE_FIREWALL=1`, and
+restricts egress via `OPENAI_ALLOWED_DOMAINS`. Use this when running Codex
+against untrusted code.
+
 ## Override
 
 Use `AGENTS.override.md` for personal instruction overrides — loaded before `AGENTS.md`, not committed to git.
