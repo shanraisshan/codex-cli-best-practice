@@ -33,7 +33,7 @@ Codex discovers `hooks.json` files at two levels — both load simultaneously; h
 
 | Event | Matcher | Description |
 |-------|---------|-------------|
-| `SessionStart` | `startup \| resume` | Runs at session initialization |
+| `SessionStart` | `startup \| resume \| clear` | Runs at session initialization; `clear` distinguishes `/clear`-recreated sessions (v0.120.0+) |
 | `PreToolUse` | `Bash` | Intercepts tool execution before running (Bash only) |
 | `PostToolUse` | `Bash` | Reviews tool results after execution (Bash only) |
 | `UserPromptSubmit` | Not supported | Runs when user submits a prompt |
@@ -82,7 +82,17 @@ Hooks organize into three levels: **event → matcher group → hook handlers**
 
 ### SessionStart
 
-Injects context at session initialization.
+Injects context at session initialization. The `source` input field tells you
+which lifecycle event triggered the hook:
+
+| `source` | Meaning |
+|---|---|
+| `startup` | Fresh process start (`codex`) |
+| `resume` | `/resume` or `codex resume <id>` |
+| `clear` | Session recreated by `/clear` in the TUI (v0.120.0+) |
+
+Branch on `source` if your context should differ — e.g. inject a "welcome to
+this repo" preamble on `startup` but skip it on `clear` so `/clear` stays fast.
 
 **Input fields:** `source`, `session_id`, `transcript_path`, `cwd`, `hook_event_name`, `model`
 
@@ -224,7 +234,7 @@ For repo-local hooks, prefer git-root-based paths to avoid issues when Codex sta
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume",
+        "matcher": "startup|resume|clear",
         "hooks": [
           {
             "type": "command",
