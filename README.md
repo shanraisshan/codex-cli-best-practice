@@ -1,7 +1,7 @@
 # codex-cli-best-practice
-practice makes codex perfect
+from vibe coding to agentic engineering - practice makes codex perfect
 
-![updated with Codex CLI](https://img.shields.io/badge/updated_with_Codex_CLI-v0.118.0%20(Apr%2003%2C%202026%2011%3A04%20PM%20PKT)-white?style=flat&labelColor=555) <a href="https://github.com/shanraisshan/codex-cli-best-practice/stargazers"><img src="https://img.shields.io/github/stars/shanraisshan/codex-cli-best-practice?style=flat&label=%E2%98%85&labelColor=555&color=white" alt="GitHub Stars"></a>
+![updated with Codex CLI](https://img.shields.io/badge/updated_with_Codex_CLI-v0.121.0%20(Apr%2019%2C%202026)-white?style=flat&labelColor=555) <a href="https://github.com/shanraisshan/codex-cli-best-practice/stargazers"><img src="https://img.shields.io/github/stars/shanraisshan/codex-cli-best-practice?style=flat&label=%E2%98%85&labelColor=555&color=white" alt="GitHub Stars"></a>
 
 [![Best Practice](!/tags/best-practice.svg)](best-practice/) [![Implemented](!/tags/implemented.svg)](.codex/) [![Orchestration Workflow](!/tags/orchestration-workflow.svg)](orchestration-workflow/orchestration-workflow.md) [![Codex](!/tags/codex.svg)](https://developers.openai.com/codex/overview) [![Community](!/tags/community.svg)](#-tips-and-tricks) ![Click on these badges below to see the actual sources](!/tags/click-badges.svg)<br>
 <img src="!/tags/a.svg" height="14"> = Agents · <img src="!/tags/c.svg" height="14"> = Commands · <img src="!/tags/s.svg" height="14"> = Skills
@@ -18,8 +18,10 @@ practice makes codex perfect
 | <img src="!/tags/a.svg" height="14"> [**Subagents**](https://developers.openai.com/codex/subagents) | [`.codex/agents/<name>.toml`](.codex/agents/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-subagents.md) [![Implemented](!/tags/implemented.svg)](.codex/agents/) Custom agents registered under `[agents.<name>]` with dedicated TOML role configs, parallel subagent orchestration, and CSV batch processing · Global settings live under `[agents]` (`max_threads`, `max_depth`, `job_max_runtime_seconds`) · Built-in: `default`, `worker`, `explorer` |
 | <img src="!/tags/s.svg" height="14"> [**Skills**](https://developers.openai.com/codex/skills) | [`.agents/skills/<name>/SKILL.md`](.agents/skills/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-skills.md) [![Implemented](!/tags/implemented.svg)](.agents/skills/) [Reference](docs/SKILLS.md) Reusable instruction packages with required `name` + `description` metadata and progressive disclosure via `scripts/`, `references/`, `assets/`, and optional `agents/openai.yaml` · Invoke explicitly via `/skills` or `$skill-name`, or implicitly by description match · Built-in examples: `$plan`, `$skill-creator`, `$skill-installer` · Distributed via [Plugins](https://developers.openai.com/codex/plugins) |
 | [**Plugins**](https://developers.openai.com/codex/plugins) | `.codex-plugin/plugin.json` | Distributable bundles combining skills + app integrations + MCP servers — local/personal [marketplace](https://developers.openai.com/codex/plugins/build) system · Built-in: `$plugin-creator` · Browse via `/plugins` or Codex App |
+| [**Marketplace**](https://developers.openai.com/codex/plugins) ![new](!/tags/beta.svg) | `$CODEX_HOME` → `[marketplaces.*]` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-marketplace.md) Plugin catalog system (v0.121.0+) — `codex plugin marketplace add\|upgrade\|remove` accepts GitHub shorthand, git URLs, and local directories · Manifest at `.agents/plugins/marketplace.json` · Browse installed marketplaces via `/plugins` tabs |
+| [**Memories**](https://developers.openai.com/codex/memories) ![new](!/tags/beta.svg) | `$CODEX_HOME/memories/` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-memory.md) Cross-session memory pipeline (v0.119.0+) — enable via `[features] memories = true` and configure under `[memories]` · TUI control via `/memories` (use · generate · reset) · Per-thread toggle persists in state DB · Scope is per-user, not per-project |
 | [**Workflows**](https://developers.openai.com/codex/workflows/) | [`.codex/agents/weather-agent.toml`](.codex/agents/weather-agent.toml) | [![Orchestration Workflow](!/tags/orchestration-workflow.svg)](orchestration-workflow/orchestration-workflow.md) End-to-end usage patterns — explain codebase, fix bugs, write tests, prototype from screenshot, iterate UI, delegate to cloud, code review, update docs |
-| [**MCP Servers**](https://developers.openai.com/codex/mcp) | `config.toml` → `[mcp_servers.*]` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-mcp.md) [![Implemented](!/tags/implemented.svg)](.codex/config.toml) Model Context Protocol for external tools — STDIO + Streamable HTTP servers · OAuth support (`codex mcp login`) · Also acts as MCP **server** via `codex mcp-server` (exposes `codex()` + `codex-reply()` tools) · CLI management: `codex mcp add\|get\|list\|login\|logout\|remove` |
+| [**MCP Servers**](https://developers.openai.com/codex/mcp) | `config.toml` → `[mcp_servers.*]` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-mcp.md) [![Implemented](!/tags/implemented.svg)](.codex/config.toml) Model Context Protocol for external tools — STDIO + Streamable HTTP servers · OAuth support (`codex mcp login`) · Also acts as MCP **server** via `codex mcp-server` (exposes `codex()` + `codex-reply()` tools) · **MCP Apps** (v0.119.0+): resource reads, elicitations, file-parameter uploads · **Parallel calls** (v0.121.0+): `supports_parallel_tool_calls = true` per server · CLI management: `codex mcp add\|get\|list\|login\|logout\|remove` |
 | [**Config**](https://developers.openai.com/codex/config-basic) | [`.codex/config.toml`](.codex/config.toml) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-config.md) [![Implemented](!/tags/implemented.svg)](.codex/config.toml) TOML-based layered config system · [Profiles](https://developers.openai.com/codex/config-basic) · [Sandbox](https://developers.openai.com/codex/cli/features) · [Approval Policy](https://developers.openai.com/codex/cli/features) · [Advanced](https://developers.openai.com/codex/config-advanced) (`[features]`, `[otel]`, `[shell_environment_policy]`, `[tui]`, model providers, granular approvals) · [Trust](https://developers.openai.com/codex/config-basic) system for project configs · `developer_instructions` · `model_instructions_file` for custom system prompts |
 | [**Rules**](https://developers.openai.com/codex/rules) | `.codex/rules/` | Starlark-based command execution policies via `prefix_rule()` — `allow`, `prompt`, `forbidden` decisions with exact-prefix matching · Test via `codex execpolicy check` · Rules work alongside granular `approval_policy` controls and user-managed approvals |
 | [**AGENTS.md**](https://developers.openai.com/codex/guides/agents-md) | [`AGENTS.md`](AGENTS.md) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-agents-md.md) Project-level context for Codex CLI — hierarchical discovery from cwd to repo root, capped at 32 KiB (`project_doc_max_bytes`) · `AGENTS.override.md` for personal overrides |
@@ -74,9 +76,9 @@ All major workflows converge on the same architectural pattern: **Research → P
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
 </p>
 
-## 💡 TIPS AND TRICKS (47)
+## 💡 TIPS AND TRICKS (50)
 
-[Prompting](#tips-prompting) · [Planning](#tips-planning) · [AGENTS.md](#tips-agentsmd) · [Agents](#tips-agents) · [Skills](#tips-skills) · [Hooks](#tips-hooks) · [Workflows](#tips-workflows) · [Advanced](#tips-workflows-advanced) · [Git / PR](#tips-git-pr) · [Debugging](#tips-debugging) · [Utilities](#tips-utilities) · [Daily](#tips-daily)
+[Prompting](#tips-prompting) · [Planning](#tips-planning) · [AGENTS.md](#tips-agentsmd) · [Agents](#tips-agents) · [Skills](#tips-skills) · [Hooks](#tips-hooks) · [Memories](#tips-memory) · [Workflows](#tips-workflows) · [Advanced](#tips-workflows-advanced) · [Git / PR](#tips-git-pr) · [Debugging](#tips-debugging) · [Utilities](#tips-utilities) · [Daily](#tips-daily)
 
 ![Community](!/tags/community.svg)
 
@@ -127,12 +129,20 @@ All major workflows converge on the same architectural pattern: **Research → P
 | don't railroad Codex in skills — give goals and constraints, not prescriptive step-by-step instructions |
 | use the built-in skill creator to scaffold new skills, and document one invocation style consistently across the repo |
 
-<a id="tips-hooks"></a>■ **Hooks (2)**
+<a id="tips-hooks"></a>■ **Hooks (3)**
 
 | Tip |
 |-----|
 | use [hooks](https://developers.openai.com/codex/hooks) for logging, security scanning, and validation — requires codex_hooks = true feature flag |
 | use hooks for auto-formatting code — Codex generates well-formatted code, the hook handles the last 10% to avoid CI failures |
+| branch `SessionStart` on `source` (`startup \| resume \| clear`) — skip heavy context on `clear` so `/clear` stays snappy (v0.120.0+) |
+
+<a id="tips-memory"></a>■ **Memories (2)**
+
+| Tip |
+|-----|
+| enable [memories](https://developers.openai.com/codex/memories) once and forget about it — consolidation runs between sessions, not mid-turn |
+| set `no_memories_if_mcp_or_web_search = true` for threads that touch secrets or untrusted content — reset via `/memories → Reset` if exposure happens |
 
 <a id="tips-workflows"></a>■ **Workflows (4)**
 
