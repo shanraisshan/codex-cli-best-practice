@@ -1,44 +1,10 @@
-# CI-specific Codex CLI configuration
-#
-# This config is optimized for automated pipeline execution:
-# - Fast model (o4-mini) for cost efficiency
-# - Full sandbox for maximum isolation
-# - Full-auto approval with scoped allow-list
-# - No network access (full sandbox blocks it)
-#
-# Usage:
-#   codex --profile ci exec "your prompt here"
-#
-# Or set as the project default for CI environments:
-#   CODEX_PROFILE=ci codex exec "your prompt here"
-
-# Default model for all profiles
-model = "o4-mini"
-
-# Default interactive behavior
-approval_policy = "on-request"
-sandbox_mode = "workspace-write"
-
-# ─────────────────────────────────────
-# CI Profile
-# ─────────────────────────────────────
-[profiles.ci]
-model = "o4-mini"
+# Copy as config.toml into an isolated CODEX_HOME for CI.
+# Use an API-accessible model for the runner's credentials.
+model = "gpt-6.2-sol"
+sandbox_mode = "read-only"
 approval_policy = "never"
-sandbox_mode = "read-only"
+web_search = "disabled"
 
-# ─────────────────────────────────────
-# Review Profile (read-only analysis)
-# ─────────────────────────────────────
-[profiles.review]
-model = "o3"
-approval_policy = "untrusted"
-sandbox_mode = "read-only"
-
-# ─────────────────────────────────────
-# Development Profile (local work)
-# ─────────────────────────────────────
-[profiles.development]
-model = "o4-mini"
-approval_policy = "on-request"
-sandbox_mode = "workspace-write"
+[features]
+hooks = false
+memories = false

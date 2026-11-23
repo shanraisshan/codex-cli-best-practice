@@ -11,11 +11,24 @@ Codex uses skills in two ways:
 
 That makes the `description` field the most important part of the skill metadata.
 
-### `$` Menu (v0.121.0+)
+### Composer Mentions
 
-Typing `$` in the TUI composer opens a unified mention menu that lists your
-skills alongside apps and plugins. Skills show with their `name` field; the
-`description` field is used to rank matches as you type.
+Type `# Best Practice: Skills
+
+Skills are the primary mechanism for extending Codex CLI with reusable, composable instruction packages. They follow the `SKILL.md` standard and work best when they are narrow, trigger cleanly, and keep context small.
+
+## Core Pattern
+
+Codex uses skills in two ways:
+
+1. Explicit invocation: mention the skill directly in the prompt. In the CLI or IDE, use `/skills` or type `$` to insert a skill mention.
+2. Implicit invocation: Codex chooses the skill when the task matches the skill `description`.
+
+That makes the `description` field the most important part of the skill metadata.
+
+### Composer Mentions
+
+ to find a skill by name. The unified `@` menu can also surface skills and plugins alongside files. Keep names distinct so they're easy to find.
 
 Because the same menu mixes apps, skills, and plugins, skill names should be
 concrete and distinguishable (e.g. `ts-migration-helper`, not `helper`).
@@ -69,7 +82,7 @@ Be specific about when the skill should trigger and, when useful, when it should
 
 ## Design for Current Codex Behavior
 
-- Treat skills as reusable workflows, not as custom slash commands.
+- Save recurring prompts or existing slash commands with `/presets`. Package reusable instructions and supporting files as skills.
 - Prefer `/skills` and `$skill-name` mentions for explicit invocation examples.
 - Use plugins to distribute reusable skills beyond a single repo.
 - Use `[[skills.config]]` in `~/.codex/config.toml` to disable a skill without deleting it.
@@ -106,3 +119,5 @@ This is the right place for UI presentation and invocation policy. Do not rely o
 | Treating `skills = [...]` as the main way to attach domain knowledge | Let skills trigger by description, or manage availability with `[[skills.config]]` |
 | Putting all instructions in `AGENTS.md` | Extract focused workflows into skills |
 | Writing broad descriptions that match everything | Make `description` a precise trigger condition |
+
+See the [skills system reference](../docs/SKILLS.md) and [official skill authoring guide](https://learn.chatgpt.com/docs/build-skills).

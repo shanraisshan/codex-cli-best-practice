@@ -1,17 +1,6 @@
-# GitHub Actions workflow using Codex CLI for automated code review and analysis.
-#
-# This workflow demonstrates:
-# - Running codex exec in CI with the ci profile
-# - PR review automation
-# - Test failure analysis
-# - Documentation validation
-#
-# Prerequisites:
-# - OPENAI_API_KEY secret configured in repository settings
-# - .codex/config.toml with a [profiles.ci] section in the repository
-
+# Copy to .github/workflows/codex-ci.yml and configure the OPENAI_API_KEY secret.
+# Keep examples/ci-cd/ci-config.toml at the path below or adjust the copy step.
 name: Codex CI
-
 on:
   pull_request:
     branches: [main]
@@ -20,95 +9,85 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
-  # Job 1: Automated PR review using Codex CLI
-  pr-review:
-    if: github.event_name == 'pull_request'
+  review:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 0  # Full history for accurate diffs
+          fetch-depth: 0
+          persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Prepare isolated Codex config
+        run: install -D -m 600 examples/ci-cd/ci-config.toml "$RUNNER_TEMP/codex-review/config.toml"
+
+      - name: Review changes
+        id: codex
+        uses: openai/codex-action@v1
         with:
-          node-version: '20'
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          codex-version: '0.171.0'
+          codex-home: ${{ runner.temp }}/codex-review
+          sandbox: read-only
+          codex-args: '["--ephemeral","--strict-config"]'
+          prompt: >-
+            Review the changes introduced by this pull request. Check correctness,
+            regressions, and any changes to command examples or configuration docs.
+            Report actionable findings with file and line references.
 
-      - name: Install Codex CLI
-        run: npm install -g @openai/codex
-
-      - name: Run PR Review
-        run: |
-          codex --profile ci exec \
-            "Review the diff between origin/main and HEAD. \
-             Focus on: correctness, security issues, performance. \
-             Output a markdown summary with severity ratings."
+      - name: Add review to job summary
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CODEX_REVIEW: ${{ steps.codex.outputs.final-message }}
+        run: printf '%s\n' "$CODEX_REVIEW" >> "$GITHUB_STEP_SUMMARY"
 
-  # Job 2: Test analysis — runs when tests fail
   test-analysis:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
         with:
-          node-version: '20'
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        if: hashFiles('package-lock.json') != ''
+        with:
+          node-version: '22'
 
       - name: Install dependencies
+        if: hashFiles('package-lock.json') != ''
         run: npm ci
 
       - name: Run tests
         id: tests
-        run: npm test 2>&1 | tee test-output.txt
+        if: hashFiles('package-lock.json') != ''
+        shell: bash
+        run: npm test 2>&1 | tee "$RUNNER_TEMP/codex-test-output.txt"
         continue-on-error: true
 
-      - name: Install Codex CLI
+      - name: Prepare failure analysis
         if: steps.tests.outcome == 'failure'
-        run: npm install -g @openai/codex
+        run: |
+          install -D -m 600 examples/ci-cd/ci-config.toml "$RUNNER_TEMP/codex-tests/config.toml"
+          cp "$RUNNER_TEMP/codex-test-output.txt" codex-test-output.txt
 
       - name: Analyze test failures
         if: steps.tests.outcome == 'failure'
-        run: |
-          codex --profile ci exec \
-            "Read test-output.txt and analyze the test failures. \
-             For each failure, explain the likely cause and suggest a fix. \
-             Output as markdown."
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-
-      - name: Fail if tests failed
-        if: steps.tests.outcome == 'failure'
-        run: exit 1
-
-  # Job 3: Documentation check
-  docs-check:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+        id: codex
+        uses: openai/codex-action@v1
         with:
-          node-version: '20'
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          codex-version: '0.171.0'
+          codex-home: ${{ runner.temp }}/codex-tests
+          sandbox: read-only
+          codex-args: '["--ephemeral","--strict-config"]'
+          prompt: Read codex-test-output.txt, identify the likely failure cause, and suggest focused fixes.
 
-      - name: Install Codex CLI
-        run: npm install -g @openai/codex
-
-      - name: Check documentation
-        run: |
-          codex --profile ci exec \
-            "Check whether README.md, best-practice/, and reports/ use the \
-             current Codex CLI schema. List any stale paths, commands, or \
-             configuration keys."
+      - name: Report test failure
+        if: always() && steps.tests.outcome == 'failure'
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CODEX_ANALYSIS: ${{ steps.codex.outputs.final-message }}
+        run: |
+          printf '%s\n' "$CODEX_ANALYSIS" >> "$GITHUB_STEP_SUMMARY"
+          exit 1

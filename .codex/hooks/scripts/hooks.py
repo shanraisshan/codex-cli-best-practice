@@ -327,7 +327,7 @@ def main():
     1. SessionStart (hooks.json): Outputs context to stdout + plays sound
     2. PreToolUse (hooks.json): Plays sound before a tool executes
     3. PostToolUse (hooks.json): Plays sound after a tool completes
-    4. Stop (hooks.json): Plays sound on session end
+    4. Stop (hooks.json): Plays sound at turn completion
     5. UserPromptSubmit (hooks.json): Plays sound when user submits a prompt
     """
     try:

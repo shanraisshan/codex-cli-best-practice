@@ -1,18 +1,5 @@
-# Development Profile
-#
-# Balanced configuration for day-to-day local development:
-# - Workspace writes are allowed
-# - The model can ask when it needs approval
-# - Network blocked (no accidental data exfiltration)
-#
-# This is the recommended default for most developers.
-
-model = "o4-mini"
-approval_policy = "on-request"
+# Copy to ${CODEX_HOME:-$HOME/.codex}/development.config.toml.
+# Run: codex --profile development
+# Trusted project config and CLI flags can override this layer.
 sandbox_mode = "workspace-write"
-
-# Usage:
-#   codex --profile development
-#
-# Recommended as the project default in .codex/config.toml.
-# Override with --profile conservative when reviewing unfamiliar code.
+approval_policy = "on-request"

@@ -4,24 +4,20 @@ The `AGENTS.md` file is the primary instructions file for Codex CLI — providin
 
 ## File Naming and Fallbacks
 
-Codex CLI searches for instructions in this order:
-1. `AGENTS.md` (preferred)
-2. `CODEX.md` (alias)
+Codex loads the first non-empty instruction file in each directory:
+1. `AGENTS.override.md`
+2. `AGENTS.md`
+3. Names configured in `project_doc_fallback_filenames`, in order
 
-Use `AGENTS.md` for new projects.
+Use `AGENTS.md` for checked-in guidance and `AGENTS.override.md` for an override at the same level. `CODEX.md` is only a fallback if you configure it.
 
 ## Sizing: Keep It Under 150 Lines
 
-The single most impactful best practice: **keep AGENTS.md concise**.
-
-- Lines beyond ~150 are increasingly likely to be ignored or truncated
-- Long files dilute important instructions with noise
-- The model processes instructions better when they are focused
+Keep instructions focused. This repo uses **150 lines** as an editorial guideline. Codex enforces the combined project budget in bytes, with a default of 32 KiB via `project_doc_max_bytes`.
 
 **If you exceed 150 lines**, extract detailed content into:
 - Skill files (`skills/<name>/SKILL.md`) for specialized procedures
 - Separate docs files referenced by path
-- Agent-preloaded skills for domain-specific knowledge
 
 ## Hierarchy and Override Mechanism
 
@@ -34,7 +30,7 @@ AGENTS.md files follow directory hierarchy:
 ```
 
 **Loading behavior**:
-- Codex walks up from the working directory, loading each AGENTS.md it finds
+- Codex reads global guidance from `$CODEX_HOME`, then checks the path from the project root down to the working directory. Without a project root it checks only the working directory
 - More specific (deeper) files take precedence over general (higher) ones
 - All files are concatenated into context, with deeper files appearing later
 
@@ -63,7 +59,7 @@ Explicit anti-patterns to avoid.
 
 | Anti-Pattern | Why It Fails | Fix |
 |---|---|---|
-| Dumping entire API docs | Exceeds line limit; dilutes focus | Link to docs; use skills |
+| Dumping entire API docs | Consumes the byte budget; dilutes focus | Link to docs; use skills |
 | Repeating obvious conventions | Wastes lines on things the model knows | Only document the non-obvious |
 | Long code examples | Eats line budget fast | Keep examples under 10 lines |
 | Vague instructions ("be careful") | Not actionable | Be specific: "Always run `npm test` before committing" |
@@ -81,8 +77,10 @@ This keeps each file short while maintaining comprehensive coverage.
 
 ## Truncation Behavior
 
-When AGENTS.md exceeds the model's processing capacity:
-- Content at the end of the file is most likely to be truncated
+When project instructions hit the configured byte budget:
+- Later content can be truncated or omitted. Reserve space for instructions from deeper directories
 - Put the most critical instructions at the top
 - Use clear section headers so the model can scan structure even if details are lost
 - Test by asking the model to repeat instructions from different sections
+
+See [official AGENTS.md documentation](https://learn.chatgpt.com/docs/agent-configuration/agents-md#how-codex-discovers-guidance).

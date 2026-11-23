@@ -1,26 +1,5 @@
-# Trusted Project Profile
-#
-# Permissive configuration for well-understood, trusted projects:
-# - Full automation with broad allow-list
-# - Network access enabled (for API calls, package installs)
-# - No sandbox restrictions
-#
-# WARNING: This profile provides maximum autonomy. Use only when:
-# - You fully trust the codebase
-# - You need network access (APIs, package managers)
-# - You have a good git safety net (working on branches, not main)
-#
-# NOT recommended for: untrusted repos, CI pipelines, security reviews.
-
-model = "o3"
+# Copy to ${CODEX_HOME:-$HOME/.codex}/trusted-project.config.toml.
+# Run: codex --profile trusted-project
+# For trusted tasks that can finish within the workspace without approval prompts.
+sandbox_mode = "workspace-write"
 approval_policy = "never"
-sandbox_mode = "danger-full-access"
-
-# Safety notes:
-# - sandbox_mode = "danger-full-access" means Codex has full filesystem and network access
-# - approval_policy = "never" means Codex will not stop to ask before acting
-# - Always work on a branch, never directly on main
-# - Review changes with `git diff` before pushing
-#
-# Usage:
-#   codex --profile trusted-project

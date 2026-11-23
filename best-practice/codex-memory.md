@@ -1,120 +1,37 @@
 # Best Practice: Memories
 
-Codex CLI v0.119.0+ introduced **memories** — a per-user context system that
-learns from your threads and injects relevant notes into future sessions.
-Memories are scoped to your `$CODEX_HOME` (not per-project), opt-in per thread,
-and fully resettable.
+Local Codex memories carry useful context from earlier chats into future work. Keep project rules and shared decisions in `AGENTS.md` or checked-in docs.
 
-<table width="100%">
-<tr>
-<td><a href="../">← Back to Codex CLI Best Practice</a></td>
-<td align="right"><img src="../!/codex-jumping.svg" alt="Codex" width="60" /></td>
-</tr>
-</table>
+## Enable and Control Memories
 
-## Feature Flag
-
-Memories are off by default. Enable in `config.toml`:
+Local memories are off by default. Enable them in your user config:
 
 ```toml
 [features]
 memories = true
-```
 
-## Slash Command
-
-In the TUI, open the memories settings view with `/memories`. Three controls:
-
-| Item | Effect |
-|---|---|
-| **Use memories** | Inject existing memories into new threads (applied at next thread) |
-| **Generate memories** | Include current + future threads as memory-generation input |
-| **Reset all memories** | Clear local memory files and summaries. Existing threads stay intact |
-
-Reset asks for confirmation and wipes both `$CODEX_HOME/memories/` and
-`$CODEX_HOME/memories_extensions/` — it does NOT touch the threads themselves.
-
-A hidden CLI equivalent also exists for scripted environments:
-
-```bash
-codex debug clear-memories
-```
-
-## Config Keys
-
-Full `[memories]` table (all optional, shown with defaults):
-
-```toml
 [memories]
-use_memories                       = true     # inject into future sessions
-generate_memories                  = true     # record threads as generation input
-consolidation_model                = "gpt-5.4"        # Phase 2 model
-extract_model                      = "gpt-5.4-mini"   # Phase 1 model
-max_raw_memories_for_consolidation = 256      # cap 4096
-max_rollout_age_days               = 30       # clamp 0..=90
-max_rollouts_per_startup           = 16       # cap 128
-max_unused_days                    = 30       # drives memory-extension cleanup (0..=365)
-min_rollout_idle_hours             = 6        # clamp 1..=48
-no_memories_if_mcp_or_web_search   = false    # privacy guard
+use_memories = true
+generate_memories = true
+disable_on_external_context = true
 ```
 
-The pair `use_memories` + `generate_memories` replaces a single mode enum — a
-"use-only" client sets `generate_memories = false` and still benefits from
-previously-generated memories.
+- `use_memories` controls whether new chats receive memory context.
+- `generate_memories` controls whether new chats can contribute to future memories.
+- `disable_on_external_context` excludes chats that used external context, such as web search, tool search, or MCP. The older `no_memories_if_mcp_or_web_search` is an alias.
 
-## Per-Thread Override
+Use `/memories` in the CLI to control use and generation for the current chat. The global feature flag determines whether the local memory feature is available. The desktop app also has machine-level settings under **Settings → Personalization**.
 
-Each thread carries a `memory_mode` column in the state DB (`"enabled"` or
-`"disabled"`). Toggled from the TUI settings view or programmatically via the
-app-server RPC `thread/memoryMode/set`.
+## Storage and Updates
 
-## Memory Extensions
+Codex generates memories in the background from eligible previous chats. The store belongs to the local Codex home. Existing profiles can use `$CODEX_HOME/memories/`; version 2 uses `$CODEX_HOME/memories_v2/`. Fresh profiles default to v2 when memories are enabled, subject to version and migration settings. During migration both stores may exist.
 
-An extension is a plug-in that contributes both persistent instructions and
-transient per-run evidence. On disk:
-
-```
-$CODEX_HOME/memories_extensions/
-└── <extension_name>/
-    ├── instructions.md              # always loaded if present
-    └── resources/
-        └── 2026-04-18T14-32-05-notes.md   # per-run artifact, auto-pruned
-```
-
-Cleanup runs during Phase 2 consolidation: resource files older than 7 days are
-deleted automatically. A full reset wipes the entire `memories_extensions/`
-tree.
-
-## Scope Summary
-
-| Scope | Location | Notes |
-|---|---|---|
-| Per-thread | state DB `threads.memory_mode` | `/memories` toggles or RPC |
-| Per-user (global) | `$CODEX_HOME/memories/` | Consolidated raw + summaries |
-| Project | *(not supported)* | Memories do not scope to a project directory |
-
-Memory pipeline only runs for root sessions that are: non-ephemeral, feature-
-enabled, not a sub-agent, and with state DB available.
+Optional tuning includes `memories.extract_model`, `memories.consolidation_model`, and `memories.min_rate_limit_remaining_percent`. Leave model overrides unset unless you have verified access and want a specific model for the memory jobs. [Computer History](https://learn.chatgpt.com/docs/customization/computer-history) is a separate macOS desktop app feature.
 
 ## Good Habits
 
-- Enable memories once, then forget about them — the consolidation pipeline
-  runs in the background between sessions, not mid-turn.
-- Keep `no_memories_if_mcp_or_web_search = true` for threads that touch secrets
-  or untrusted content.
-- Treat memories as ambient background context, not a structured knowledge
-  base — if you need durable project facts, put them in `AGENTS.md`.
-- Reset memories if you switch roles or change working domains meaningfully —
-  stale memories hurt more than they help.
-- For CI / throwaway workflows, set `[features] memories = false` or use a
-  separate `CODEX_HOME`.
+- Keep sensitive details out of persistent memories and review generated files before sharing any of them.
+- Use checked-in instructions for behavior every contributor should get.
+- For throwaway or CI work, leave memories disabled or use an isolated `CODEX_HOME`.
 
-## Anti-Patterns
-
-| Anti-Pattern | Fix |
-|---|---|
-| Using `[memory]` (singular) in config | The table is `[memories]` (plural) |
-| Expecting memories to scope per project | Memories live under `$CODEX_HOME` — use `AGENTS.md` for project context |
-| Storing secrets and expecting cleanup | Use `no_memories_if_mcp_or_web_search = true` and reset on exposure |
-| Hand-editing `$CODEX_HOME/memories/*.md` | Reset via `/memories` — the pipeline owns these files |
-| Editing memory extension resources manually | They're transient — cleanup runs them off every 7 days |
+See [local memory controls](https://learn.chatgpt.com/docs/customization/memories#configure-local-memories) and the [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).

@@ -13,17 +13,19 @@ This document describes the **Agent → Skill** orchestration workflow, demonstr
 
 The weather system demonstrates two component patterns within a single orchestration workflow:
 - **Agent**: `weather-agent` fetches temperature from Open-Meteo using inlined `developer_instructions`
-- **Skill** (independent): `weather-svg-creator` is invoked by the agent to create the visual output
+- **Skill** (independent): `weather-svg-creator` is used by the parent to create the visual output
 
 This showcases the **Agent → Skill** architecture pattern, where:
-- An agent fetches data and orchestrates the workflow
-- A skill creates the visual output independently
+- A custom agent fetches data and returns the value and unit
+- The parent uses the skill with the returned data
 
 ## ![How to Use](../!/tags/how-to-use.svg)
 
+Start Codex from the repository root and enter this prompt:
+
 ```bash
 codex
-> Fetch the current weather for Dubai in Celsius and create the SVG weather card output using the repo.
+> Use weather-agent to fetch the current temperature in Dubai in Celsius, then use $weather-svg-creator to create the weather card.
 ```
 
 Specify "in Fahrenheit" in your prompt to switch units. The agent defaults to Celsius if no preference is given.
@@ -32,13 +34,13 @@ Output files:
 - `orchestration-workflow/weather.svg` — SVG weather card
 - `orchestration-workflow/output.md` — Markdown summary
 
-> **Note:** This workflow is not 100% in sync with the [Claude Code Best Practice](https://github.com/shanraisshan/claude-code-best-practice) orchestration workflow. Codex CLI does not yet support [custom commands](https://developers.openai.com/codex/cli/slash-commands) (`.codex/commands/`) or a stable ask-user tool for mid-turn user interaction. There is an experimental `tool/requestUserInput` in the [Codex App Server](https://developers.openai.com/codex) docs and an internal `request_user_input` capability gated behind an under-development feature flag in codex-cli 0.115.0, but neither is publicly available for normal CLI usage yet. As a result, the Codex pattern is **Agent → Skill** instead of **Command → Agent → Skill**, and the user must specify preferences (e.g., Celsius/Fahrenheit) in the prompt rather than being asked by the agent.
+> Reuse the prompt with [`/presets`](https://learn.chatgpt.com/docs/developer-commands?surface=cli#reuse-prompts-and-commands-with-presets). The caller supplies the unit and the agent defaults to Celsius. Open-Meteo requires network access from the execution environment. If the shell network is blocked, use an allowed tool or approve the specific fetch when prompted.
 
 ## Component Summary
 
 | Component | Role | Example |
 |-----------|------|---------|
-| **Agent** | Entry point, data fetching, skill invocation | [`weather-agent`](../.codex/agents/weather-agent.toml) |
+| **Agent** | Fetches the weather and returns structured facts | [`weather-agent`](../.codex/agents/weather-agent.toml) |
 | **Skill** | Creates output independently | [`weather-svg-creator`](../.agents/skills/weather-svg-creator/SKILL.md) |
 
 ## Flow Diagram
@@ -65,7 +67,7 @@ Output files:
          │  weather-agent — Agent ● developer_instructions     │
          └─────────────────────────┬───────────────────────────┘
                                    │
-                          Returns: temp + unit
+                   Returns data to the parent thread
                                    │
                          Step 2 — Skill
                                    │
@@ -88,28 +90,28 @@ Output files:
 
 #### `weather-agent` (Agent)
 - **Location**: `.codex/agents/weather-agent.toml`
-- **Purpose**: Entry point — fetches temperature, invokes skill
-- **Model**: o4-mini
-- **Registration**: `[agents.weather-agent]` in `.codex/config.toml`
+- **Purpose**: Fetches the temperature for Dubai and returns it to the parent
+- **Model**: Inherited from the parent
+- **Discovery**: Standalone TOML file under `.codex/agents/`
 
-The agent's `developer_instructions` contain the full workflow: fetch from Open-Meteo API using curl (using the caller-provided unit preference, defaulting to Celsius), then invoke `/weather-svg-creator` with the data.
+The agent fetches the current temperature from Open-Meteo in the requested unit and returns the result. The parent passes that data to the skill.
 
 ### 2. Skill
 
 #### `weather-svg-creator` (Skill)
 - **Location**: `.agents/skills/weather-svg-creator/SKILL.md`
 - **Purpose**: Create a visual SVG weather card and write output files
-- **Invocation**: Via skill invocation from the agent
+- **Invocation**: A `$weather-svg-creator` mention in the parent prompt
 - **Outputs**:
   - `orchestration-workflow/weather.svg` — SVG weather card
   - `orchestration-workflow/output.md` — Weather summary
 
 ## Execution Flow
 
-1. **User Prompt**: User prompts Codex, specifying city and unit preference (e.g., "Dubai in Celsius")
-2. **Agent Start**: Codex auto-selects `weather-agent` based on the task
+1. **User Prompt**: Name the agent and skill and give a unit preference
+2. **Agent Start**: Codex delegates the fetch to `weather-agent` on request
 3. **Data Fetching**: Agent fetches temperature from Open-Meteo API for Dubai using curl
-4. **Skill Invocation**: Agent invokes `/weather-svg-creator` skill
+4. **Skill Invocation**: The parent uses `$weather-svg-creator` with the agent's result
    - Skill creates SVG weather card at `orchestration-workflow/weather.svg`
    - Skill writes summary to `orchestration-workflow/output.md`
 5. **Result Display**: Summary shown to user with temperature, SVG location, and output file
@@ -117,10 +119,10 @@ The agent's `developer_instructions` contain the full workflow: fetch from Open-
 ## Example Execution
 
 ```
-Input: Fetch the current weather for Dubai in Celsius and create the SVG weather card
+Input: Use weather-agent, then $weather-svg-creator, for Dubai in Celsius
 ├─ Step 1: Agent fetches from Open-Meteo API
 │  └─ Returns: temperature=29, unit=Celsius, city=Dubai
-├─ Step 2: Agent invokes skill → /weather-svg-creator
+├─ Step 2: Parent applies $weather-svg-creator
 │  ├─ Creates: orchestration-workflow/weather.svg
 │  └─ Writes: orchestration-workflow/output.md
 └─ Output:
@@ -132,9 +134,9 @@ Input: Fetch the current weather for Dubai in Celsius and create the SVG weather
 
 ## Key Design Principles
 
-1. **Agent as Entry Point**: The agent handles data fetching and skill invocation — no separate orchestrator needed
+1. **Prompt as Entry Point**: The parent delegates data fetching to the weather agent
 2. **Skill for Rendering**: The SVG creator runs independently, receiving data from the agent's context
-3. **Inlined Instructions**: The agent's `developer_instructions` contain the fetching logic directly, since Codex CLI subagents do not support preloaded skills
+3. **Inlined Instructions**: The agent's `developer_instructions` contain the fetching logic
 4. **Clean Separation**: Fetch (agent) → Render (skill) — each component has a single responsibility
 5. **Idempotent Output**: Running the workflow again overwrites the previous output cleanly
 
@@ -145,16 +147,14 @@ Input: Fetch the current weather for Dubai in Celsius and create the SVG weather
 ```toml
 # In agent definition (.codex/agents/weather-agent.toml)
 name = "weather-agent"
-description = "Fetches temperature from Open-Meteo, invokes skill."
+description = "Fetches Dubai temperature from Open-Meteo."
 developer_instructions = """
 Step 1: Fetch from Open-Meteo API (use caller's unit preference, default Celsius)
-Step 2: Invoke /weather-svg-creator skill
+Step 2: Return city, temperature, unit, and fetch time to the parent
 """
 ```
 
-- **Self-contained**: The agent has everything it needs — data fetching and skill invocation
-- **No preloaded skills**: Codex CLI subagents do not support the `skills:` preloading pattern
-- **Prompt-driven skill invocation**: The agent tells Codex to invoke `/weather-svg-creator` via natural language instructions
+- **Handoff**: The parent receives the data and applies the selected skill.
 
 ### Skill (Direct Invocation)
 
@@ -166,7 +166,7 @@ description: Creates an SVG weather card...
 ---
 ```
 
-- **Invoked by agent**: Agent instructions tell Codex to invoke `/weather-svg-creator`
+- **Explicit skill mention**: The parent prompt selects `$weather-svg-creator`
 - **Independent execution**: Runs in the conversation context with the temperature data available
 - **Receives data from context**: Uses temperature data already available in the conversation
 
@@ -174,10 +174,10 @@ description: Creates an SVG weather card...
 
 | Aspect | Claude Code | Codex CLI |
 |---|---|---|
-| **Entry point** | Custom Command (`.claude/commands/`) | Agent (`.codex/agents/`) |
-| **User interaction** | Command asks via `AskUserQuestion` tool | User specifies in prompt (no mid-turn asking) |
+| **Entry point** | Custom Command (`.claude/commands/`) | User prompt or saved preset |
+| **User interaction** | Command asks via `AskUserQuestion` tool | User specifies the unit in this example |
 | **Data fetching** | Agent with preloaded skill | Agent with inlined `developer_instructions` |
-| **Skill invocation** | `Skill()` tool call (deterministic) | `/skill-name` instruction (prompt-driven) |
+| **Skill invocation** | `Skill()` tool call (deterministic) | `$skill-name` mention in the parent prompt |
 | **Agent knowledge** | Preloaded skills via `skills:` field | Inlined via `developer_instructions` |
 | **Pattern name** | Command → Agent → Skill | Agent → Skill |
-| **Orchestration style** | Imperative (explicit tool calls) | Declarative (instruction-based) |
+| **Orchestration style** | Imperative (explicit tool calls) | Parent delegates to the agent and applies the skill |

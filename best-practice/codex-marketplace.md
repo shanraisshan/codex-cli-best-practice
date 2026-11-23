@@ -18,6 +18,7 @@ All marketplace commands live under `codex plugin marketplace`:
 
 ```bash
 codex plugin marketplace add <SOURCE> [--ref <REF>] [--sparse <PATH>]...
+codex plugin marketplace list [--json]
 codex plugin marketplace upgrade [MARKETPLACE_NAME]
 codex plugin marketplace remove <MARKETPLACE_NAME>
 ```
@@ -32,8 +33,7 @@ codex plugin marketplace remove <MARKETPLACE_NAME>
 | Local directory | `codex plugin marketplace add /abs/path/to/marketplace` |
 | Relative path | `codex plugin marketplace add ./vendor/internal-market` |
 
-Listing is done from the TUI via `/plugins` (per-marketplace tabs) — there is no
-`codex plugin marketplace list` subcommand.
+Use `codex plugin marketplace list` to inspect the current catalogs and roots. Use `codex plugin list` to browse plugins from available catalogs, `codex plugin add` to install one, and `codex plugin remove` to uninstall it. Use `--help` for selection syntax.
 
 ### Partial clones
 
@@ -52,8 +52,9 @@ via `git sparse-checkout`.
 
 Codex looks for the manifest at one of:
 
-- `.agents/plugins/marketplace.json` (Codex-native)
+- `.agents/plugins/marketplace.json` (Codex-native; API-key catalogs can use `.agents/plugins/api_marketplace.json`)
 - `.claude-plugin/marketplace.json` (Claude Code compatible)
+- `.cursor-plugin/marketplace.json` (Cursor compatible)
 
 Minimal manifest:
 
@@ -66,7 +67,7 @@ Minimal manifest:
 }
 ```
 
-Full-shape manifest with every supported `source` variant:
+Manifest with several supported source forms:
 
 ```json
 {
@@ -99,6 +100,14 @@ Full-shape manifest with every supported `source` variant:
         "url": "https://github.com/owner/repo.git",
         "ref": "main"
       }
+    },
+    {
+      "name": "npm-plugin",
+      "source": {
+        "source": "npm",
+        "package": "@example/codex-toolkit",
+        "version": "1.2.3"
+      }
     }
   ]
 }
@@ -114,7 +123,7 @@ Full-shape manifest with every supported `source` variant:
 | `plugins[].source` | yes | Bare string (local path) or object discriminated by `"source"` |
 | `plugins[].policy.installation` | no | `NOT_AVAILABLE \| AVAILABLE \| INSTALLED_BY_DEFAULT` (default `AVAILABLE`) |
 | `plugins[].policy.authentication` | no | `ON_INSTALL \| ON_USE` |
-| `plugins[].policy.products` | no | e.g. `["codex_cli"]` |
+| `plugins[].policy.products` | no | Product metadata, e.g. `["codex_cli"]`. Use workspace policy for enforcement |
 | `plugins[].category` | no | Taxonomy string for the UI |
 
 `source` object types:
@@ -122,6 +131,7 @@ Full-shape manifest with every supported `source` variant:
 - `"local"` — `{ "source": "local", "path": "./..." }`
 - `"url"` — `{ "source": "url", "url": "...", "path"?, "ref"?, "sha"? }`
 - `"git-subdir"` — `{ "source": "git-subdir", "url": "...", "path": "...", "ref"?, "sha"? }` (path required)
+- `"npm"` — `{ "source": "npm", "package": "...", "version"?, "registry"? }`
 
 ## On-Disk Layout
 
@@ -160,13 +170,7 @@ SHA has moved.
 
 ## Running Plugin Workflows
 
-After installation, plugin contents (skills, agents, MCP servers, commands) are
-discoverable through the usual Codex surfaces:
-
-- `/plugins` — browse + install/uninstall per marketplace tab
-- `/skills` + `$skill-name` — for plugin-provided skills
-- `/agent` — for plugin-provided subagents
-- `[mcp_servers.*]` — auto-wired if the plugin declares them
+After installation, open `/plugins` to inspect a plugin's capabilities. Use the plugin skill mention shown in the composer to invoke a skill. Plugins can also bundle MCP servers and lifecycle hooks; inspect the manifest and review any hooks before trusting them.
 
 ## Anti-Patterns
 
@@ -174,6 +178,8 @@ discoverable through the usual Codex surfaces:
 |---|---|
 | Using `codex marketplace add ...` (top-level) | The command is `codex plugin marketplace add` |
 | Hand-editing `[marketplaces.*]` in config.toml | Use `add` / `upgrade` / `remove` — Codex manages the keys |
-| Publishing marketplaces without `marketplace.json` at one of the two known paths | Use `.agents/plugins/marketplace.json` or `.claude-plugin/marketplace.json` |
+| Publishing marketplaces without `marketplace.json` at a supported path | Use `.agents/plugins/marketplace.json` for a new Codex catalog |
 | Relying on `source: "./outside"` paths that escape the marketplace root | Local sources must stay under the marketplace directory |
 | Cloning giant marketplace repos fully | Use `--sparse <PATH>` to fetch only what you need |
+
+See the [plugin guide](https://learn.chatgpt.com/docs/plugins) and [tagged marketplace implementation](https://github.com/openai/codex/blob/rust-v0.171.0/codex-rs/core-plugins/src/marketplace.rs).

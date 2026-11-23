@@ -1,36 +1,56 @@
 # codex-cli-best-practice
 from vibe coding to agentic engineering - practice makes codex perfect
 
-![updated with Codex CLI](https://img.shields.io/badge/updated_with_Codex_CLI-v0.137.0%20(Jun%2004%2C%202026%2011:42%20PM%20PKT)-white?style=flat&labelColor=555) <a href="https://github.com/shanraisshan/codex-cli-best-practice/stargazers"><img src="https://img.shields.io/github/stars/shanraisshan/codex-cli-best-practice?style=flat&label=%E2%98%85&labelColor=555&color=white" alt="GitHub Stars"></a>
+![verified with Codex CLI](https://img.shields.io/badge/verified_with_Codex_CLI-v0.171.0%20%28Nov%2024%2C%202026%20PKT%29-white?style=flat&labelColor=555) <a href="https://github.com/shanraisshan/codex-cli-best-practice/stargazers"><img src="https://img.shields.io/github/stars/shanraisshan/codex-cli-best-practice?style=flat&label=%E2%98%85&labelColor=555&color=white" alt="GitHub Stars"></a>
 
-[![Best Practice](!/tags/best-practice.svg)](best-practice/) [![Implemented](!/tags/implemented.svg)](.codex/) [![Orchestration Workflow](!/tags/orchestration-workflow.svg)](orchestration-workflow/orchestration-workflow.md) [![Codex](!/tags/codex.svg)](https://developers.openai.com/codex/overview) [![Community](!/tags/community.svg)](#-tips-and-tricks) ![Click on these badges below to see the actual sources](!/tags/click-badges.svg)<br>
+[![Best Practice](!/tags/best-practice.svg)](best-practice/) [![Implemented](!/tags/implemented.svg)](.codex/) [![Orchestration Workflow](!/tags/orchestration-workflow.svg)](orchestration-workflow/orchestration-workflow.md) [![Codex](!/tags/codex.svg)](https://learn.chatgpt.com/docs/codex/cli) [![Community](!/tags/community.svg)](#tips-and-tricks) ![Click on these badges below to see the actual sources](!/tags/click-badges.svg)<br>
 <img src="!/tags/a.svg" height="14"> = Agents · <img src="!/tags/c.svg" height="14"> = Commands · <img src="!/tags/s.svg" height="14"> = Skills
 
 <p align="center">
   <img src="!/codex-jumping.svg" alt="Codex CLI mascot jumping" width="120" height="100">
 </p>
 
+[How to Use](#how-to-use) · [Verification history](changelog/best-practice/concepts/changelog.md) · [Verification checklist](changelog/best-practice/concepts/verification-checklist.md)
+
 ## 🧠 CONCEPTS
 
 | Feature | Location | Description |
 |---------|----------|-------------|
-| <img src="!/tags/c.svg" height="14"> [**Commands**](https://developers.openai.com/codex/cli/slash-commands) | `interactive session / slash popup` | Built-in slash commands for session control — examples include `/plan`, `/fast`, `/fork`, `/review`, `/status`, `/mcp`, `/agent`, `/apps`, `/model`, and `/permissions` |
-| <img src="!/tags/a.svg" height="14"> [**Subagents**](https://developers.openai.com/codex/subagents) | [`.codex/agents/<name>.toml`](.codex/agents/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-subagents.md) [![Implemented](!/tags/implemented.svg)](.codex/agents/) Custom agents registered under `[agents.<name>]` with dedicated TOML role configs, parallel subagent orchestration, and CSV batch processing · Global settings live under `[agents]` (`max_threads`, `max_depth`, `job_max_runtime_seconds`) · Built-in: `default`, `worker`, `explorer` |
-| <img src="!/tags/s.svg" height="14"> [**Skills**](https://developers.openai.com/codex/skills) | [`.agents/skills/<name>/SKILL.md`](.agents/skills/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-skills.md) [![Implemented](!/tags/implemented.svg)](.agents/skills/) [Reference](docs/SKILLS.md) Reusable instruction packages with required `name` + `description` metadata and progressive disclosure via `scripts/`, `references/`, `assets/`, and optional `agents/openai.yaml` · Invoke explicitly via `/skills` or `$skill-name`, or implicitly by description match · Built-in examples: `$plan`, `$skill-creator`, `$skill-installer` · Distributed via [Plugins](https://developers.openai.com/codex/plugins) |
-| [**Plugins**](https://developers.openai.com/codex/plugins) | `.codex-plugin/plugin.json` | Distributable bundles combining skills + app integrations + MCP servers — local/personal [marketplace](https://developers.openai.com/codex/plugins/build) system · Built-in: `$plugin-creator` · Browse via `/plugins` or Codex App |
-| [**Marketplace**](https://developers.openai.com/codex/plugins) ![new](!/tags/beta.svg) | `$CODEX_HOME` → `[marketplaces.*]` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-marketplace.md) Plugin catalog system (v0.121.0+) — `codex plugin marketplace add\|upgrade\|remove` accepts GitHub shorthand, git URLs, and local directories · Manifest at `.agents/plugins/marketplace.json` · Browse installed marketplaces via `/plugins` tabs |
-| [**Memories**](https://developers.openai.com/codex/memories) ![new](!/tags/beta.svg) | `$CODEX_HOME/memories/` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-memory.md) Cross-session memory pipeline (v0.119.0+) — enable via `[features] memories = true` and configure under `[memories]` · TUI control via `/memories` (use · generate · reset) · Per-thread toggle persists in state DB · Scope is per-user, not per-project |
-| [**Workflows**](https://developers.openai.com/codex/workflows/) | [`.codex/agents/weather-agent.toml`](.codex/agents/weather-agent.toml) | [![Orchestration Workflow](!/tags/orchestration-workflow.svg)](orchestration-workflow/orchestration-workflow.md) End-to-end usage patterns — explain codebase, fix bugs, write tests, prototype from screenshot, iterate UI, delegate to cloud, code review, update docs |
-| [**MCP Servers**](https://developers.openai.com/codex/mcp) | `config.toml` → `[mcp_servers.*]` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-mcp.md) [![Implemented](!/tags/implemented.svg)](.codex/config.toml) Model Context Protocol for external tools — STDIO + Streamable HTTP servers · OAuth support (`codex mcp login`) · Also acts as MCP **server** via `codex mcp-server` (exposes `codex()` + `codex-reply()` tools) · **MCP Apps** (v0.119.0+): resource reads, elicitations, file-parameter uploads · **Parallel calls** (v0.121.0+): `supports_parallel_tool_calls = true` per server · CLI management: `codex mcp add\|get\|list\|login\|logout\|remove` |
-| [**Config**](https://developers.openai.com/codex/config-basic) | [`.codex/config.toml`](.codex/config.toml) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-config.md) [![Implemented](!/tags/implemented.svg)](.codex/config.toml) TOML-based layered config system · [Profiles](https://developers.openai.com/codex/config-basic) · [Sandbox](https://developers.openai.com/codex/cli/features) · [Approval Policy](https://developers.openai.com/codex/cli/features) · [Advanced](https://developers.openai.com/codex/config-advanced) (`[features]`, `[otel]`, `[shell_environment_policy]`, `[tui]`, model providers, granular approvals) · [Trust](https://developers.openai.com/codex/config-basic) system for project configs · `developer_instructions` · `model_instructions_file` for custom system prompts |
-| [**Rules**](https://developers.openai.com/codex/rules) | `.codex/rules/` | Starlark-based command execution policies via `prefix_rule()` — `allow`, `prompt`, `forbidden` decisions with exact-prefix matching · Test via `codex execpolicy check` · Rules work alongside granular `approval_policy` controls and user-managed approvals |
-| [**AGENTS.md**](https://developers.openai.com/codex/guides/agents-md) | [`AGENTS.md`](AGENTS.md) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-agents-md.md) Project-level context for Codex CLI — hierarchical discovery from cwd to repo root, capped at 32 KiB (`project_doc_max_bytes`) · `AGENTS.override.md` for personal overrides |
-| [**Hooks**](https://developers.openai.com/codex/hooks) ![beta](!/tags/beta.svg) | [`.codex/hooks.json`](.codex/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-hooks.md) [![Implemented](!/tags/implemented.svg)](https://github.com/shanraisshan/codex-cli-hooks) User-defined shell scripts that inject into the agentic loop — logging, security scanning, validation, and custom automation · Requires `codex_hooks = true` feature flag |
-| [**Speed**](https://developers.openai.com/codex/speed) | `config.toml` → `service_tier` | Fast Mode (1.5x speed, 2x credits) on gpt-5.4 — toggle with `/fast on\|off\|status` · GPT-5.3-Codex-Spark for near-instant iteration (Pro subscribers) |
-| [**Code Review**](https://developers.openai.com/codex/cli/features) | `/review` | Review branches, uncommitted changes, or specific commits — configurable `review_model` in config.toml · Custom review instructions |
-| [**Sessions**](https://github.com/openai/codex/releases) ![new](!/tags/beta.svg) | `$CODEX_HOME/sessions/` · `/archive` | Session lifecycle management — resume or fork prior threads · **archive** via `/archive` (TUI) or `codex archive` / `codex unarchive` (CLI); archived threads are protected from resume/fork until restored (v0.137.0+) · **search local conversation history** with case-insensitive content matches + result previews (v0.135.0+) |
+| <img src="!/tags/c.svg" height="14"> [**Commands**](https://learn.chatgpt.com/docs/developer-commands?surface=cli#built-in-slash-commands) | Interactive slash menu | Use `/plan`, `/review`, `/model`, and `/permissions`. Save recurring prompts and commands with `/presets` |
+| [**Goals**](https://learn.chatgpt.com/docs/long-running-work) | `/goal` | Set a persistent objective with a verifiable completion condition |
+| <img src="!/tags/a.svg" height="14"> [**Subagents**](https://learn.chatgpt.com/docs/agent-configuration/subagents) | [`.codex/agents/`](.codex/agents/) · `/subagents` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-subagents.md) [![Implemented](!/tags/implemented.svg)](.codex/agents/) Delegate independent work to built-in or custom agents |
+| <img src="!/tags/s.svg" height="14"> [**Skills**](https://learn.chatgpt.com/docs/build-skills) | [`.agents/skills/`](.agents/skills/) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-skills.md) [![Implemented](!/tags/implemented.svg)](.agents/skills/) [Reference](docs/SKILLS.md) Reusable instructions. Find them with `/skills` or mention `$skill-name` |
+| [**Plugins**](https://learn.chatgpt.com/docs/plugins) | `/plugins` · `codex plugin` | Install bundles that can include skills, apps, MCP servers, and hooks |
+| **Marketplace** | `.agents/plugins/marketplace.json` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-marketplace.md) Manage catalogs with `codex plugin marketplace add\|list\|upgrade\|remove` |
+| [**Memories**](https://learn.chatgpt.com/docs/customization/memories) | `/memories` · `[features].memories` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-memory.md) Opt in to carry context across chats using the local memory store |
+| **Workflows** | [Weather agent](.codex/agents/weather-agent.toml) | [![Orchestration Workflow](!/tags/orchestration-workflow.svg)](orchestration-workflow/orchestration-workflow.md) Fetch data with a custom agent, then render an artifact with a skill |
+| [**MCP Servers**](https://learn.chatgpt.com/docs/extend/mcp) | `[mcp_servers.*]` · `codex mcp` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-mcp.md) [![Implemented](!/tags/implemented.svg)](.codex/config.toml) Connect to stdio or Streamable HTTP servers. The experimental [App Server](https://learn.chatgpt.com/docs/app-server) replaces the removed `codex mcp-server` for embedding Codex |
+| [**Config**](https://learn.chatgpt.com/docs/config-file/config-basic) | [`.codex/config.toml`](.codex/config.toml) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-config.md) Trusted project and user layers, named config profiles, and CLI overrides |
+| [**Permissions**](https://learn.chatgpt.com/docs/agent-approvals-security) | `/permissions` · `/approve` | Control sandboxing and approvals. Named [filesystem and network permission profiles](https://learn.chatgpt.com/docs/permissions) are in beta |
+| [**Rules**](https://learn.chatgpt.com/docs/agent-configuration/rules) ![experimental](!/tags/beta.svg) | `.codex/rules/` | Use Starlark `prefix_rule()` to control commands outside the sandbox |
+| [**AGENTS.md**](https://learn.chatgpt.com/docs/agent-configuration/agents-md) | [`AGENTS.md`](AGENTS.md) | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-agents-md.md) Layer one instruction file per directory from the project root to the working directory |
+| [**Hooks**](https://learn.chatgpt.com/docs/hooks) | [`.codex/hooks.json`](.codex/hooks.json) · `/hooks` | [![Best Practice](!/tags/best-practice.svg)](best-practice/codex-hooks.md) [![Implemented](!/tags/implemented.svg)](.codex/hooks/) Run command or MCP hooks at lifecycle events. Review and trust new or changed project hooks |
+| [**Models**](https://learn.chatgpt.com/docs/models) | `/model` · `--model` | The v0.171.0 catalog defaults to GPT-6.2 Sol and includes GPT-6.2 Astra and GPT-6.1 Terra. Availability depends on provider, account, and workspace |
+| [**Speed**](https://learn.chatgpt.com/docs/agent-configuration/speed#codex-cli-controls) | `/fast` · `/ultrafast` | Select a supported speed tier when offered by your model catalog and plan |
+| [**Code Review**](https://learn.chatgpt.com/docs/code-review) | `/review` · `codex review` | Review a branch, uncommitted changes, or a commit. Configure `review_model` for a separate review model |
+| [**Sessions**](https://learn.chatgpt.com/docs/developer-commands?surface=cli#built-in-slash-commands) | `codex agents` · `/agents` | Search sessions, resume or fork work, archive or restore sessions, and export transcripts |
+| [**Worktrees**](https://learn.chatgpt.com/docs/environments/git-worktrees) | `codex --worktree` · `/worktree` | Work in an isolated Git checkout while other sessions use the repository |
+| [**Non-interactive mode**](https://learn.chatgpt.com/docs/non-interactive-mode) | `codex exec` | Run scripted tasks with JSONL events or structured output. See the [CI example](examples/ci-cd/github-actions.yml) |
 | **AI Terms** | | [![Best Practice](!/tags/best-practice.svg)](https://github.com/shanraisshan/claude-code-codex-cursor-gemini/blob/main/reports/ai-terms.md) Agentic Engineering · Context Engineering · Vibe Coding |
-| [**Best Practices**](https://developers.openai.com/codex/learn/best-practices) | | Official best practices · [Prompt Engineering](https://platform.openai.com/docs/guides/prompt-engineering) · [Codex Guides](https://developers.openai.com/codex/overview) |
+| [**Best Practices**](https://learn.chatgpt.com/guides/best-practices) | | [Prompting](https://learn.chatgpt.com/docs/prompting) · [Codex CLI guide](https://learn.chatgpt.com/docs/codex/cli) |
+
+### 🔥 Hot
+
+| Feature | Location | Description |
+|---------|----------|-------------|
+| [**Terminal workspace**](https://github.com/openai/codex/releases/tag/rust-v0.171.0) | Fullscreen TUI | Enabled by default in v0.171.0, with searchable document previews, image previews, and subagent transcripts alongside the main chat |
+| [**Remote control**](https://github.com/openai/codex/releases/tag/rust-v0.171.0) | `/rc` or `/remote` | Manage local remote control and show device pairing codes |
+| [**Remote exec**](https://github.com/openai/codex/releases/tag/rust-v0.171.0) | `codex exec --remote <ADDR>` | Start or resume a non-interactive session on an existing experimental app server |
+| [**MCP status line**](https://github.com/openai/codex/releases/tag/rust-v0.171.0) ![experimental](!/tags/beta.svg) | `/statusline` | Create or select a custom MCP status line with `features.tui_extensions_statusline` enabled |
+| [**Terminal controls**](https://learn.chatgpt.com/docs/cli-customization) | `/config` · `/keymap` · `/tui` | Change preferences, remap shortcuts, and choose fullscreen or scrollback |
+| [**Background server**](https://github.com/openai/codex/releases/tag/rust-v0.157.0) | `/daemon` · `--no-daemon` | Eligible interactive sessions share a local server. Use `--no-daemon` for an isolated launch |
+| [**Desktop handoff**](https://learn.chatgpt.com/docs/developer-commands?surface=cli#continue-in-the-desktop-app-with-app) | `/app` | Continue the CLI chat in the desktop app on macOS or Windows |
+| [**Import**](https://learn.chatgpt.com/docs/import) | `/import` | Preview supported setup and chats from Claude Code or Cursor and choose what to migrate |
 
 <p align="center">
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
@@ -38,7 +58,7 @@ from vibe coding to agentic engineering - practice makes codex perfect
 
 [![Orchestration Workflow](!/tags/orchestration-workflow-hd.svg)](orchestration-workflow/orchestration-workflow.md)
 
-See [orchestration-workflow](orchestration-workflow/orchestration-workflow.md) for implementation details of <img src="!/tags/a.svg" height="14"> **Agent** → <img src="!/tags/s.svg" height="14"> **Skill** pattern. The agent fetches temperature from Open-Meteo and invokes the SVG creator skill.
+See [orchestration-workflow](orchestration-workflow/orchestration-workflow.md) for implementation details of <img src="!/tags/a.svg" height="14"> **Agent** → <img src="!/tags/s.svg" height="14"> **Skill** pattern. The agent fetches the temperature from Open-Meteo, and the parent passes it to the SVG creator skill.
 
 <p align="center">
   <img src="!/orchestration-workflow-diagram.svg" alt="Orchestration Workflow: Agent → Skill → Output" width="100%">
@@ -48,10 +68,10 @@ See [orchestration-workflow](orchestration-workflow/orchestration-workflow.md) f
 
 ```bash
 codex
-> Fetch the current weather for Dubai in Celsius and create the SVG weather card output using the repo.
+> Use weather-agent to fetch the current temperature in Dubai in Celsius, then use $weather-svg-creator to create the weather card.
 ```
 
-> **Note:** This workflow is not 100% in sync with the [Claude Code Best Practice](https://github.com/shanraisshan/claude-code-best-practice) orchestration workflow. Codex CLI does not yet support custom commands (`.codex/commands/`), so the full <img src="!/tags/c.svg" height="14"> **Command** → <img src="!/tags/a.svg" height="14"> **Agent** → <img src="!/tags/s.svg" height="14"> **Skill** pattern is not possible. There is an experimental `tool/requestUserInput` in the Codex App Server docs and an internal `request_user_input` capability gated behind an under-development feature flag in codex-cli 0.115.0, but neither is publicly available yet.
+> The prompt supplies the temperature unit. Save it with [`/presets`](https://learn.chatgpt.com/docs/developer-commands?surface=cli#reuse-prompts-and-commands-with-presets) to run it again.
 
 <p align="center">
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
@@ -63,14 +83,14 @@ All major workflows converge on the same architectural pattern: **Research → P
 
 | Name | ★ | Workflow | <img src="!/tags/a.svg" height="14"> | <img src="!/tags/s.svg" height="14"> |
 |------|---|----------|---|---|
-| [Superpowers](https://github.com/obra/superpowers) | 218k | <img src="https://img.shields.io/badge/brainstorming-ddf4ff" alt="brainstorming" align="middle"> → <img src="https://img.shields.io/badge/writing--plans-ddf4ff" alt="writing-plans" align="middle"> → <img src="https://img.shields.io/badge/subagent--driven--development-ddf4ff" alt="subagent-driven-development" align="middle"> → <img src="https://img.shields.io/badge/test--driven--development-fff3b0" alt="test-driven-development" align="middle"> → <img src="https://img.shields.io/badge/requesting--code--review-fff3b0" alt="requesting-code-review" align="middle"> → <img src="https://img.shields.io/badge/finishing--a--development--branch-ddf4ff" alt="finishing-a-development-branch" align="middle"> | 5 | 14 |
-| [Spec Kit](https://github.com/github/spec-kit) | 108k | <img src="https://img.shields.io/badge/%2Fspeckit.constitution-ddf4ff" alt="/speckit.constitution" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.specify-ddf4ff" alt="/speckit.specify" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.plan-ddf4ff" alt="/speckit.plan" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.tasks-ddf4ff" alt="/speckit.tasks" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.implement-ddf4ff" alt="/speckit.implement" align="middle"> | 0 | 0 |
-| [gstack](https://github.com/garrytan/gstack) | 107k | <img src="https://img.shields.io/badge/%2Foffice--hours-ddf4ff" alt="/office-hours" align="middle"> → <img src="https://img.shields.io/badge/%2Fplan--ceo--review-ddf4ff" alt="/plan-ceo-review" align="middle"> → <img src="https://img.shields.io/badge/%2Fplan--eng--review-ddf4ff" alt="/plan-eng-review" align="middle"> → <img src="https://img.shields.io/badge/%2Fplan--design--review-ddf4ff" alt="/plan-design-review" align="middle"> → <img src="https://img.shields.io/badge/implement-ddf4ff" alt="implement" align="middle"> → <img src="https://img.shields.io/badge/%2Freview-ddf4ff" alt="/review" align="middle"> → <img src="https://img.shields.io/badge/%2Fqa-ddf4ff" alt="/qa" align="middle"> → <img src="https://img.shields.io/badge/%2Fship-ddf4ff" alt="/ship" align="middle"> → <img src="https://img.shields.io/badge/%2Fland--and--deploy-ddf4ff" alt="/land-and-deploy" align="middle"> | 0 | 41 |
-| [Get Shit Done](https://github.com/gsd-build/get-shit-done) | 64k | <img src="https://img.shields.io/badge/%2Fgsd--new--project-ddf4ff" alt="/gsd-new-project" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--discuss--phase-ddf4ff" alt="/gsd-discuss-phase" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--plan--phase-ddf4ff" alt="/gsd-plan-phase" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--execute--phase-ddf4ff" alt="/gsd-execute-phase" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--verify--work-fff3b0" alt="/gsd-verify-work" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--ship-ddf4ff" alt="/gsd-ship" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--complete--milestone-ddf4ff" alt="/gsd-complete-milestone" align="middle"> | 33 | 0 |
-| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | 30k | <img src="https://img.shields.io/badge/$deep--interview-ddf4ff" alt="$deep-interview" align="middle"> → <img src="https://img.shields.io/badge/$ralplan-ddf4ff" alt="$ralplan" align="middle"> → <img src="https://img.shields.io/badge/$ralph-ddf4ff" alt="$ralph" align="middle"> | 19 | 36 |
-| [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin) | 20k | <img src="https://img.shields.io/badge/%2Fce--ideate-ddf4ff" alt="/ce-ideate" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--brainstorm-ddf4ff" alt="/ce-brainstorm" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--plan-ddf4ff" alt="/ce-plan" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--work-ddf4ff" alt="/ce-work" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--code--review-ddf4ff" alt="/ce-code-review" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--compound-ddf4ff" alt="/ce-compound" align="middle"> → <img src="https://img.shields.io/badge/repeat-ddf4ff" alt="repeat" align="middle"> | 49 | 42 |
+| [Superpowers](https://github.com/obra/superpowers) | ![GitHub stars](https://img.shields.io/github/stars/obra/superpowers?style=flat&label=%E2%98%85) | <img src="https://img.shields.io/badge/brainstorming-ddf4ff" alt="brainstorming" align="middle"> → <img src="https://img.shields.io/badge/writing--plans-ddf4ff" alt="writing-plans" align="middle"> → <img src="https://img.shields.io/badge/subagent--driven--development-ddf4ff" alt="subagent-driven-development" align="middle"> → <img src="https://img.shields.io/badge/test--driven--development-fff3b0" alt="test-driven-development" align="middle"> → <img src="https://img.shields.io/badge/requesting--code--review-fff3b0" alt="requesting-code-review" align="middle"> → <img src="https://img.shields.io/badge/finishing--a--development--branch-ddf4ff" alt="finishing-a-development-branch" align="middle"> | 5 | 14 |
+| [Spec Kit](https://github.com/github/spec-kit) | ![GitHub stars](https://img.shields.io/github/stars/github/spec-kit?style=flat&label=%E2%98%85) | <img src="https://img.shields.io/badge/%2Fspeckit.constitution-ddf4ff" alt="/speckit.constitution" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.specify-ddf4ff" alt="/speckit.specify" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.plan-ddf4ff" alt="/speckit.plan" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.tasks-ddf4ff" alt="/speckit.tasks" align="middle"> → <img src="https://img.shields.io/badge/%2Fspeckit.implement-ddf4ff" alt="/speckit.implement" align="middle"> | 0 | 0 |
+| [gstack](https://github.com/garrytan/gstack) | ![GitHub stars](https://img.shields.io/github/stars/garrytan/gstack?style=flat&label=%E2%98%85) | <img src="https://img.shields.io/badge/%2Foffice--hours-ddf4ff" alt="/office-hours" align="middle"> → <img src="https://img.shields.io/badge/%2Fplan--ceo--review-ddf4ff" alt="/plan-ceo-review" align="middle"> → <img src="https://img.shields.io/badge/%2Fplan--eng--review-ddf4ff" alt="/plan-eng-review" align="middle"> → <img src="https://img.shields.io/badge/%2Fplan--design--review-ddf4ff" alt="/plan-design-review" align="middle"> → <img src="https://img.shields.io/badge/implement-ddf4ff" alt="implement" align="middle"> → <img src="https://img.shields.io/badge/%2Freview-ddf4ff" alt="/review" align="middle"> → <img src="https://img.shields.io/badge/%2Fqa-ddf4ff" alt="/qa" align="middle"> → <img src="https://img.shields.io/badge/%2Fship-ddf4ff" alt="/ship" align="middle"> → <img src="https://img.shields.io/badge/%2Fland--and--deploy-ddf4ff" alt="/land-and-deploy" align="middle"> | 0 | 41 |
+| [Get Shit Done](https://github.com/gsd-build/get-shit-done) | ![GitHub stars](https://img.shields.io/github/stars/gsd-build/get-shit-done?style=flat&label=%E2%98%85) | <img src="https://img.shields.io/badge/%2Fgsd--new--project-ddf4ff" alt="/gsd-new-project" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--discuss--phase-ddf4ff" alt="/gsd-discuss-phase" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--plan--phase-ddf4ff" alt="/gsd-plan-phase" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--execute--phase-ddf4ff" alt="/gsd-execute-phase" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--verify--work-fff3b0" alt="/gsd-verify-work" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--ship-ddf4ff" alt="/gsd-ship" align="middle"> → <img src="https://img.shields.io/badge/%2Fgsd--complete--milestone-ddf4ff" alt="/gsd-complete-milestone" align="middle"> | 33 | 0 |
+| [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex) | ![GitHub stars](https://img.shields.io/github/stars/Yeachan-Heo/oh-my-codex?style=flat&label=%E2%98%85) | <img src="https://img.shields.io/badge/$deep--interview-ddf4ff" alt="$deep-interview" align="middle"> → <img src="https://img.shields.io/badge/$ralplan-ddf4ff" alt="$ralplan" align="middle"> → <img src="https://img.shields.io/badge/$ralph-ddf4ff" alt="$ralph" align="middle"> | 19 | 36 |
+| [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin) | ![GitHub stars](https://img.shields.io/github/stars/EveryInc/compound-engineering-plugin?style=flat&label=%E2%98%85) | <img src="https://img.shields.io/badge/%2Fce--ideate-ddf4ff" alt="/ce-ideate" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--brainstorm-ddf4ff" alt="/ce-brainstorm" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--plan-ddf4ff" alt="/ce-plan" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--work-ddf4ff" alt="/ce-work" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--code--review-ddf4ff" alt="/ce-code-review" align="middle"> → <img src="https://img.shields.io/badge/%2Fce--compound-ddf4ff" alt="/ce-compound" align="middle"> → <img src="https://img.shields.io/badge/repeat-ddf4ff" alt="repeat" align="middle"> | 49 | 42 |
 
-> *Note: yellow tags are sub-loops — steps that repeat inside a parent step (e.g. per task, per story, or until a verify condition passes).*
+> *Yellow tags show steps that repeat inside a parent step. Workflow steps and counts are snapshots; check the linked project for its current inventory.*
 
 ### Others
 - [Cross-Model (Claude Code + Codex) Workflow](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md) [![Implemented](!/tags/implemented.svg)](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md)
@@ -78,6 +98,8 @@ All major workflows converge on the same architectural pattern: **Research → P
 <p align="center">
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
 </p>
+
+<a id="tips-and-tricks"></a>
 
 ## 💡 TIPS AND TRICKS (50)
 
@@ -97,7 +119,7 @@ All major workflows converge on the same architectural pattern: **Research → P
 
 | Tip |
 |-----|
-| use [/plan](https://developers.openai.com/codex/cli/slash-commands) when you want an explicit plan — Codex may also plan automatically for multi-step tasks |
+| use [/plan](https://learn.chatgpt.com/docs/developer-commands?surface=cli) when you want an explicit plan — Codex may also plan automatically for multi-step tasks |
 | always make a phase-wise gated plan, with each phase having multiple tests (unit, automation, integration) |
 | spin up a second Codex (or use [cross-model](https://github.com/shanraisshan/claude-code-best-practice/blob/main/development-workflows/cross-model-workflow/cross-model-workflow.md)) to review your plan as a staff engineer |
 | write detailed specs and reduce ambiguity before handing work off — the more specific you are, the better the output |
@@ -106,26 +128,26 @@ All major workflows converge on the same architectural pattern: **Research → P
 
 | Tip |
 |-----|
-| keep [AGENTS.md](https://developers.openai.com/codex/guides/agents-md) concise — 150 lines is a useful heuristic, but the actual limit is byte-based (32 KiB) |
-| use [AGENTS.override.md](https://developers.openai.com/codex/rules) for personal preferences without affecting the team |
+| keep [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) concise — 150 lines is a useful heuristic, but the actual project budget is byte-based (32 KiB by default) |
+| use [AGENTS.override.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) for personal preferences without affecting the team |
 | any developer should be able to launch Codex, say "run the tests" and it works on the first try — if it doesn't, your AGENTS.md is missing essential setup/build/test commands |
 | keep codebases clean and finish migrations — partially migrated frameworks confuse models that might pick the wrong pattern |
-| use [config.toml](https://developers.openai.com/codex/config-basic) for harness-enforced behavior (approval policy, sandbox, model) — don't put behavioral rules in AGENTS.md when config.toml settings are deterministic |
+| use [config.toml](https://learn.chatgpt.com/docs/config-file/config-basic) for harness-enforced behavior (approval policy, sandbox, model) — don't put behavioral rules in AGENTS.md when config.toml settings are deterministic |
 
 <a id="tips-agents"></a><img src="!/tags/a.svg" height="14"> **Agents (3)**
 
 | Tip |
 |-----|
-| have feature specific [sub-agents](https://developers.openai.com/codex/subagents) with [skills](https://developers.openai.com/codex/skills) instead of general qa, backend engineer |
-| use [multi-agent](https://developers.openai.com/codex/multi-agent/) to throw more compute at a problem — offload tasks to keep your main context clean and focused |
+| have feature specific [sub-agents](https://learn.chatgpt.com/docs/agent-configuration/subagents) with [skills](https://learn.chatgpt.com/docs/build-skills) instead of general qa, backend engineer |
+| use [multi-agent](https://learn.chatgpt.com/docs/agent-configuration/subagents) to throw more compute at a problem — offload tasks to keep your main context clean and focused |
 | use test time compute — separate context windows make results better; one agent can cause bugs and another can find them |
 
 <a id="tips-skills"></a><img src="!/tags/s.svg" height="14"> **Skills (7)**
 
 | Tip |
 |-----|
-| use [skills](https://developers.openai.com/codex/skills) with clear name and description frontmatter for auto-discovery |
-| skills are folders, not files — use references/, scripts/, examples/ subdirectories for [progressive disclosure](https://developers.openai.com/codex/skills) |
+| use [skills](https://learn.chatgpt.com/docs/build-skills) with clear name and description frontmatter for auto-discovery |
+| skills are folders, not files — use references/, scripts/, examples/ subdirectories for [progressive disclosure](https://learn.chatgpt.com/docs/build-skills) |
 | build a Gotchas section in every skill — highest-signal content, add Codex's failure points over time |
 | skill description field is a trigger, not a summary — write it for the model ("when should I fire?") |
 | don't state the obvious in skills — focus on what pushes Codex out of its default behavior |
@@ -136,7 +158,7 @@ All major workflows converge on the same architectural pattern: **Research → P
 
 | Tip |
 |-----|
-| use [hooks](https://developers.openai.com/codex/hooks) for logging, security scanning, and validation — requires codex_hooks = true feature flag |
+| use [hooks](https://learn.chatgpt.com/docs/hooks) for logging, security scanning, and validation and review new or changed project hooks with `/hooks` |
 | use hooks for auto-formatting code — Codex generates well-formatted code, the hook handles the last 10% to avoid CI failures |
 | branch `SessionStart` on `source` (`startup \| resume \| clear`) — skip heavy context on `clear` so `/clear` stays snappy (v0.120.0+) |
 
@@ -144,7 +166,7 @@ All major workflows converge on the same architectural pattern: **Research → P
 
 | Tip |
 |-----|
-| enable [memories](https://developers.openai.com/codex/memories) once and forget about it — consolidation runs between sessions, not mid-turn |
+| opt in to [memories](https://learn.chatgpt.com/docs/customization/memories) to retain useful context across sessions, and use `/memories` for chat-level controls |
 | set `no_memories_if_mcp_or_web_search = true` for threads that touch secrets or untrusted content — reset via `/memories → Reset` if exposure happens |
 
 <a id="tips-workflows"></a>■ **Workflows (4)**
@@ -152,17 +174,17 @@ All major workflows converge on the same architectural pattern: **Research → P
 | Tip |
 |-----|
 | vanilla Codex is better than any workflows with smaller tasks |
-| use [profiles](https://developers.openai.com/codex/config-basic) to switch between project-defined safety levels — in this repo, conservative and trusted are examples |
-| start with [on-request](https://developers.openai.com/codex/cli/features) approval policy — only escalate to never when confident |
-| use [/fork](https://developers.openai.com/codex/cli/slash-commands) in-session (or `codex fork`) to explore alternatives without losing your current thread, and [/resume](https://developers.openai.com/codex/cli/slash-commands) (or `codex resume`) to pick up where you left off |
+| use [profiles](https://learn.chatgpt.com/docs/config-file/config-basic) to load named user config files; see the [profile examples](examples/profiles/) |
+| start with [on-request](https://learn.chatgpt.com/docs/agent-approvals-security) for interactive work and use `never` with a deliberate sandbox policy for unattended runs |
+| use [/fork](https://learn.chatgpt.com/docs/developer-commands?surface=cli) in-session (or `codex fork`) to explore alternatives without losing your current thread, and [/resume](https://learn.chatgpt.com/docs/developer-commands?surface=cli) (or `codex resume`) to pick up where you left off |
 
 <a id="tips-workflows-advanced"></a>■ **Workflows Advanced (5)**
 
 | Tip |
 |-----|
-| use [multi-agent](https://developers.openai.com/codex/multi-agent/) to spawn sub-agents for parallel fan-out work (GA — enabled by default) |
-| use [codex exec](https://developers.openai.com/codex/noninteractive) for headless/CI pipelines |
-| combine [sandbox modes](https://developers.openai.com/codex/cli/features) with [approval policies](https://developers.openai.com/codex/cli/features) — workspace-write + on-request is a good default |
+| use [multi-agent](https://learn.chatgpt.com/docs/agent-configuration/subagents) to delegate independent work and inspect it with `/subagents` |
+| use [codex exec](https://learn.chatgpt.com/docs/non-interactive-mode) for headless/CI pipelines |
+| combine [sandbox modes](https://learn.chatgpt.com/docs/agent-approvals-security) with [approval policies](https://learn.chatgpt.com/docs/agent-approvals-security) — workspace-write + on-request is a good default |
 | [git worktrees](https://git-scm.com/docs/git-worktree) for parallel development |
 | use ASCII diagrams a lot to understand your architecture |
 
@@ -191,7 +213,7 @@ All major workflows converge on the same architectural pattern: **Research → P
 | [iTerm](https://iterm2.com/)/[Ghostty](https://ghostty.org/)/[tmux](https://github.com/tmux/tmux) terminals instead of IDE ([VS Code](https://code.visualstudio.com/)/[Cursor](https://www.cursor.com/)) | |
 | [Wispr Flow](https://wisprflow.ai) for voice prompting (10x productivity) | |
 | [codex-cli-hooks](https://github.com/shanraisshan/codex-cli-hooks) for Codex feedback | ![Shayan](!/tags/community-shayan.svg) |
-| explore config.toml features like [profiles](https://developers.openai.com/codex/config-basic), [sandbox modes](https://developers.openai.com/codex/cli/features), and [MCP](https://developers.openai.com/codex/mcp) for a personalized experience | |
+| explore config.toml features like [profiles](https://learn.chatgpt.com/docs/config-file/config-basic), [sandbox modes](https://learn.chatgpt.com/docs/agent-approvals-security), and [MCP](https://learn.chatgpt.com/docs/extend/mcp) for a personalized experience | |
 
 <a id="tips-daily"></a>■ **Daily (2)**
 
@@ -248,6 +270,15 @@ All major workflows converge on the same architectural pattern: **Research → P
 <p align="center">
   <img src="!/codex-jumping.svg" alt="section divider" width="60" height="50">
 </p>
+
+## How to Use
+
+1. Install or update the [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) and run `codex --version`.
+2. Start with **Concepts** to find the right feature and its examples.
+3. Run the [weather workflow](orchestration-workflow/orchestration-workflow.md) from the repo root, or try the [profile examples](examples/profiles/) in an isolated setup.
+4. Check the [verification history](changelog/best-practice/concepts/changelog.md) for the audited CLI version, sources, and test results.
+
+For a multi-step task with a clear finish line, try `/goal Verify every changed Markdown link and fix failures, then record the checks in the changelog.`
 
 ## Other Repos
 

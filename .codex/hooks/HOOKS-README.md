@@ -3,22 +3,17 @@ Contains all the details, scripts, and instructions for the Codex CLI hooks.
 
 ## Hook Events Overview
 
-Codex CLI provides **5 hooks** via hooks.json:
+This repo registers five of the [Codex lifecycle events](https://learn.chatgpt.com/docs/hooks). Use `/hooks` to review and trust the definitions in this trusted project.
 
-| # | Hook | Event Type | Config File | Description |
-|:-:|------|------------|-------------|-------------|
-| 1 | `SessionStart` | `SessionStart` | `hooks.json` | Runs once at session start (source: `startup \| resume \| clear`) — injects context + plays sound |
-| 2 | `PreToolUse` | `PreToolUse` | `hooks.json` | Runs before a tool executes — plays sound |
-| 3 | `PostToolUse` | `PostToolUse` | `hooks.json` | Runs after a tool completes — plays sound |
-| 4 | `Stop` | `stop` | `hooks.json` | Runs when the session ends — plays sound |
-| 5 | `UserPromptSubmit` | `UserPromptSubmit` | `hooks.json` | Runs when the user submits a prompt — plays sound |
+| Event | Repo behavior |
+|---|---|
+| `SessionStart` | Matches `startup`, `resume`, or `clear` and adds context where configured |
+| `PreToolUse` | Plays audio before a tool runs |
+| `PostToolUse` | Plays audio after a tool runs |
+| `Stop` | Plays audio at turn completion |
+| `UserPromptSubmit` | Plays audio after a prompt is submitted |
 
-> Hooks 1 and 4 require **Codex CLI v0.114.0+** with the hooks engine enabled.
-> Hooks 2 and 3 require **Codex CLI v0.117.0+** with the hooks engine enabled.
-> Hook 5 requires **Codex CLI v0.116.0+** with the hooks engine enabled:
-> ```bash
-> codex -c features.codex_hooks=true
-> ```
+The hooks feature is enabled by default in v0.171.0.
 
 ### How Hooks Are Called
 
@@ -71,54 +66,7 @@ There are **two** configuration files:
 1. **`.codex/hooks.json`** — Registers `SessionStart`, `PreToolUse`, `PostToolUse`, `Stop`, and `UserPromptSubmit` hooks
 2. **`.codex/hooks/config/hooks-config.json`** — Enable/disable individual hooks and logging
 
-#### hooks.json
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "type": "shell",
-        "command": "python3 .codex/hooks/scripts/hooks.py --hook SessionStart",
-        "statusMessage": "Initializing session hooks...",
-        "timeout": 10
-      }
-    ],
-    "PreToolUse": [
-      {
-        "type": "shell",
-        "command": "python3 .codex/hooks/scripts/hooks.py --hook PreToolUse",
-        "statusMessage": "Running pre-tool-use hook...",
-        "timeout": 10
-      }
-    ],
-    "PostToolUse": [
-      {
-        "type": "shell",
-        "command": "python3 .codex/hooks/scripts/hooks.py --hook PostToolUse",
-        "statusMessage": "Running post-tool-use hook...",
-        "timeout": 10
-      }
-    ],
-    "Stop": [
-      {
-        "type": "shell",
-        "command": "python3 .codex/hooks/scripts/hooks.py --hook Stop",
-        "statusMessage": "Running session stop hook...",
-        "timeout": 10
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "type": "shell",
-        "command": "python3 .codex/hooks/scripts/hooks.py --hook UserPromptSubmit",
-        "statusMessage": "Running user prompt submit hook...",
-        "timeout": 10
-      }
-    ]
-  }
-}
-```
+See [the checked-in hooks.json](../hooks.json) for matcher groups, handlers, and timeouts.
 
 ## Configuring Hooks (Enable/Disable)
 
@@ -174,9 +122,10 @@ When logging is enabled (`"disableLogging": false`), hook events are logged to `
 
 ## Testing
 
-Run the test suite:
+From the repository root, check that the handler accepts a sample clear event without adding session context:
+
 ```bash
-python3 -m unittest tests.test_hooks -v
+printf '%s' '{"source":"clear"}' | python3 .codex/hooks/scripts/hooks.py --hook SessionStart
 ```
 
 ## Voice

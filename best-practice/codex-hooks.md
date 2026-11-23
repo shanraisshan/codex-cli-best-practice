@@ -1,6 +1,6 @@
 # Best Practice: Hooks
 
-Hooks are an extensibility framework that inject custom scripts into the Codex agentic loop — enabling deterministic automation for logging, security scanning, validation, conversation summarization, and context-aware prompting.
+Hooks run a command or call an MCP tool at points in a Codex session. In v0.171.0 they are enabled by default. The feature key is `[features].hooks`; `codex_hooks` is a deprecated alias.
 
 <table width="100%">
 <tr>
@@ -9,282 +9,49 @@ Hooks are an extensibility framework that inject custom scripts into the Codex a
 </tr>
 </table>
 
-> **Status:** Experimental — under active development. Windows support temporarily disabled.
+## Where Hooks Load
 
-## Feature Flag
-
-Hooks require enabling in `config.toml`:
-
-```toml
-[features]
-codex_hooks = true
-```
-
-## Discovery Locations
-
-Codex discovers `hooks.json` files at two levels — both load simultaneously; higher-precedence layers don't replace lower-precedence hooks:
-
-| Priority | Location | Scope |
-|----------|----------|-------|
-| 1 | `.codex/hooks.json` | Project (team-shared) |
-| 2 | `~/.codex/hooks.json` | Global (personal) |
-
-## Hook Events
-
-| Event | Matcher | Description |
-|-------|---------|-------------|
-| `SessionStart` | `startup \| resume \| clear` | Runs at session initialization; `clear` distinguishes `/clear`-recreated sessions (v0.120.0+) |
-| `PreToolUse` | `Bash` | Intercepts tool execution before running (Bash only) |
-| `PostToolUse` | `Bash` | Reviews tool results after execution (Bash only) |
-| `UserPromptSubmit` | Not supported | Runs when user submits a prompt |
-| `Stop` | Not supported | Runs when a turn completes — determines whether to continue |
-
-## Configuration Structure
-
-Hooks organize into three levels: **event → matcher group → hook handlers**
-
-```json
-{
-  "hooks": {
-    "EventName": [
-      {
-        "matcher": "pattern|regex",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "script_path",
-            "statusMessage": "optional UI feedback",
-            "timeout": 600
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### Key Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `timeout` / `timeoutSec` | 600s | Execution time limit in seconds |
-| `statusMessage` | — | Optional UI feedback during execution |
-| `matcher` | Match all | Regex to filter event firing (`"*"`, `""`, or omit for all) |
-
-## Runtime Behavior
-
-- Matching hooks from multiple files all execute
-- Multiple command hooks for the same event launch **concurrently**
-- One hook cannot prevent another from running
-- Commands run with session `cwd` as working directory
-
-## Hook Events Deep Dive
-
-### SessionStart
-
-Injects context at session initialization. The `source` input field tells you
-which lifecycle event triggered the hook:
-
-| `source` | Meaning |
+| Scope | Standalone file |
 |---|---|
-| `startup` | Fresh process start (`codex`) |
-| `resume` | `/resume` or `codex resume <id>` |
-| `clear` | Session recreated by `/clear` in the TUI (v0.120.0+) |
+| System (macOS/Linux) | `/etc/codex/hooks.json` |
+| System (Windows) | `%ProgramData%\OpenAI\Codex\hooks.json` |
+| User | `$CODEX_HOME/hooks.json` |
+| Trusted project | `.codex/hooks.json` |
 
-Branch on `source` if your context should differ — e.g. inject a "welcome to
-this repo" preamble on `startup` but skip it on `clear` so `/clear` stays fast.
+You can also declare `[hooks]` in `config.toml`, and installed plugins can bundle hooks. Matching definitions from different sources can all run. Use one format per layer to avoid duplicates.
 
-**Input fields:** `source`, `session_id`, `transcript_path`, `cwd`, `hook_event_name`, `model`
+Open `/hooks` to inspect and trust new or changed non-managed hooks. Trust is recorded for the exact definition; changing a command or its settings can require another review.
 
-**Output:** Plain text on stdout is added as developer context. JSON output supports:
+## When Hooks Run
 
-```json
-{
-  "hookSpecificOutput": {
-    "hookEventName": "SessionStart",
-    "additionalContext": "text added as context"
-  }
-}
-```
+| Moment | Events in v0.171.0 |
+|---|---|
+| Session or subagent starts | `SessionStart`, `SubagentStart` |
+| User submits a prompt | `UserPromptSubmit` |
+| Tool call or approval | `PreToolUse`, `PermissionRequest`, `PostToolUse` |
+| Model request attempt | `PreModelRequest`, `PostModelRequest` |
+| Context compaction | `PreCompact`, `PostCompact` |
+| Agent or turn is finishing | `SubagentStop`, `Stop` |
+| Main thread interruption or end | `Interrupt`, `SessionEnd` |
 
-### PreToolUse
+`Stop` runs at turn completion. Use `SessionEnd` for main-thread shutdown and `Interrupt` for active-turn interruptions.
 
-Intercepts tool execution before running (currently Bash only).
+## Example: SessionStart
 
-> **Note:** The model can circumvent this by writing and executing scripts directly — treat as a useful guardrail rather than a complete enforcement boundary.
-
-**Input fields:** `turn_id`, `tool_name`, `tool_use_id`, `tool_input.command`, plus common fields
-
-**Deny execution:**
-
-```json
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "deny",
-    "permissionDecisionReason": "reason text"
-  }
-}
-```
-
-**Alternative:** Exit code `2` with blocking reason on stderr.
-
-### PostToolUse
-
-Reviews tool results after execution (Bash only). Cannot undo side effects but can replace the tool result with feedback.
-
-**Input fields:** `turn_id`, `tool_name`, `tool_use_id`, `tool_input.command`, `tool_response`, plus common fields
-
-**Block and replace result:**
-
-```json
-{
-  "decision": "block",
-  "reason": "feedback reason",
-  "hookSpecificOutput": {
-    "hookEventName": "PostToolUse",
-    "additionalContext": "context text"
-  }
-}
-```
-
-**Alternative:** Exit code `2` with feedback reason on stderr.
-
-### UserPromptSubmit
-
-Runs when user submits a prompt. Matcher not supported.
-
-**Input fields:** `turn_id`, `prompt`, plus common fields
-
-**Block submission:**
-
-```json
-{
-  "decision": "block",
-  "reason": "reason text"
-}
-```
-
-**Add context:**
-
-```json
-{
-  "hookSpecificOutput": {
-    "hookEventName": "UserPromptSubmit",
-    "additionalContext": "context text"
-  }
-}
-```
-
-### Stop
-
-Runs when a turn completes — determines whether to continue automatically. Matcher not supported.
-
-**Input fields:** `turn_id`, `stop_hook_active`, `last_assistant_message`, plus common fields
-
-**Continue with automatic prompt:**
-
-```json
-{
-  "decision": "block",
-  "reason": "continuation reason text"
-}
-```
-
-> `decision: "block"` tells Codex to **continue** (not reject). The reason becomes the next prompt text. If any matching hook returns `continue: false`, that takes precedence.
-
-## Common Input Fields
-
-Every command hook receives JSON on stdin:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `session_id` | string | Session/thread ID |
-| `transcript_path` | string \| null | Path to session transcript |
-| `cwd` | string | Working directory |
-| `hook_event_name` | string | Current event name |
-| `model` | string | Active model slug |
-| `turn_id` | string | Turn-scoped hooks only |
-
-## Common Output Fields
-
-`SessionStart`, `UserPromptSubmit`, and `Stop` support:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `continue` | boolean | `false` marks hook as stopped |
-| `stopReason` | string | Recorded as stop reason |
-| `systemMessage` | string | Surfaced as UI warning |
-| `suppressOutput` | boolean | Parsed, not yet implemented |
-
-Exit `0` with no output is treated as success — Codex continues normally.
-
-## Path Resolution
-
-For repo-local hooks, prefer git-root-based paths to avoid issues when Codex starts from subdirectories:
-
-```
-/usr/bin/python3 "$(git rev-parse --show-toplevel)/.codex/hooks/script.py"
-```
-
-## Full Example
+Save this in `.codex/hooks.json`. The checked-in [weather repo hook example](../.codex/hooks.json) uses this shape and also demonstrates four other events.
 
 ```json
 {
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|clear",
+        "matcher": "^(startup|resume|clear)$",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.codex/hooks/session_start.py",
-            "statusMessage": "Loading session notes"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/pre_tool_use_policy.py\"",
-            "statusMessage": "Checking Bash command"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_tool_use_review.py\"",
-            "statusMessage": "Reviewing Bash output"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/user_prompt_submit.py\""
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/stop_continue.py\"",
-            "timeout": 30
+            "command": "python3 .codex/hooks/scripts/hooks.py --hook SessionStart",
+            "timeout": 10,
+            "statusMessage": "Loading project context"
           }
         ]
       }
@@ -293,13 +60,26 @@ For repo-local hooks, prefer git-root-based paths to avoid issues when Codex sta
 }
 ```
 
-## Anti-Patterns
+An event contains matcher groups, and each group contains handlers. A `SessionStart` matcher checks the `source`; possible values also include `compact` and `fork`. Tool events match the canonical hook tool name, such as `Bash`, `apply_patch`, or an MCP tool name.
 
-| Anti-Pattern | Fix |
-|---|---|
-| Relying on `PreToolUse` as a security boundary | Treat as a guardrail — the model can write scripts to bypass it |
-| Using relative paths in hook commands | Use `$(git rev-parse --show-toplevel)` for stability |
-| Missing the `[features]` flag | Always enable `codex_hooks = true` in `config.toml` |
-| Setting very long timeouts on blocking hooks | Keep timeouts short to avoid stalling the agent loop |
-| Assuming hooks can undo `PostToolUse` side effects | They can only replace the result, not reverse the action |
-| Not handling JSON stdin properly | Every hook receives JSON on stdin — parse it correctly |
+## Input and Output
+
+- Commands receive event-specific JSON on stdin, including `hook_event_name`, `session_id`, and `cwd`. Read the payload once and use `cwd` to resolve workspace paths when appropriate.
+- Successful observer hooks can exit `0` without output. `SessionStart` can add developer context using plain stdout or JSON with `hookSpecificOutput.additionalContext`.
+- Blocking and continuation behavior depends on the event. `PreToolUse` can deny a call. A `Stop` hook can request another pass, so check `stop_hook_active` before requesting continuation.
+- Multiple matching commands can start concurrently. Keep each hook independent, use short timeouts, and avoid printing secrets into logs or model context.
+
+For example, a `SessionStart` handler can send a structured update:
+
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "Use the project test commands from AGENTS.md."
+  }
+}
+```
+
+Use the schema for the event you handle. The same payload is not valid for every event.
+
+See the [official event and output reference](https://learn.chatgpt.com/docs/hooks) and the [v0.171.0 hook schemas](https://github.com/openai/codex/tree/rust-v0.171.0/codex-rs/hooks/schema/generated).

@@ -1,21 +1,5 @@
-# Conservative Profile
-#
-# Maximum safety configuration for:
-# - Untrusted repositories
-# - Security-sensitive projects
-# - New users learning Codex CLI
-# - Code review and auditing
-#
-# Every action requires explicit approval. No file changes persist.
-# This is the safest possible configuration.
-
-model = "o4-mini"
-approval_policy = "untrusted"
+# Copy to ${CODEX_HOME:-$HOME/.codex}/conservative.config.toml.
+# Run: codex --profile conservative
+# Trusted project config and CLI flags can override this layer.
 sandbox_mode = "read-only"
-
-# Read-only sandbox prevents file changes and blocks network access.
-#
-# Usage:
-#   codex --profile conservative
-#
-# Or copy to ~/.codex/config.toml as global default for maximum safety.
+approval_policy = "on-request"

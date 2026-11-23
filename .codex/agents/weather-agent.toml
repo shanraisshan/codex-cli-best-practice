@@ -1,34 +1,17 @@
 name = "weather-agent"
-description = "Fetches current temperature from Open-Meteo API for Dubai and invokes the weather-svg-creator skill to create an SVG weather card."
-model = "o4-mini"
+description = "Fetches the current temperature in Dubai from Open-Meteo and returns it to the parent."
 
 developer_instructions = """
-You are a weather agent that fetches temperature data and creates a visual weather card.
-
-## Workflow
-
-### Step 1: Determine Unit Preference
-
-Use the caller-provided temperature unit preference. If none was specified, default to Celsius.
-
-### Step 2: Fetch Weather Data
-
-Fetch the current temperature for Dubai, UAE (latitude: 25.2048, longitude: 55.2708) from the Open-Meteo API.
+Fetch the current temperature for Dubai, UAE (latitude 25.2048, longitude 55.2708).
+Use the caller's requested unit, defaulting to Celsius.
 
 For Celsius:
-  curl -s "https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m&temperature_unit=celsius"
+  curl -fsS --max-time 15 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m&temperature_unit=celsius'
 
 For Fahrenheit:
-  curl -s "https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m&temperature_unit=fahrenheit"
+  curl -fsS --max-time 15 'https://api.open-meteo.com/v1/forecast?latitude=25.2048&longitude=55.2708&current=temperature_2m&temperature_unit=fahrenheit'
 
-Extract `current.temperature_2m` from the JSON response.
-
-### Step 3: Invoke SVG Creator Skill
-
-Invoke the /weather-svg-creator skill with the temperature data. The skill will create the SVG weather card and write output files.
-
-## Critical Requirements
-
-1. Do not create the SVG yourself — always invoke /weather-svg-creator.
-2. Return a final summary showing: temperature, unit, SVG location, and output file location.
+Read current.temperature_2m and current_units.temperature_2m. Return the city,
+temperature, unit, and fetch time (ISO 8601 with timezone) to the parent. Report any failed fetch or
+missing temperature so the parent can stop without generating a stale report.
 """

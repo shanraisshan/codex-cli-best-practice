@@ -53,7 +53,6 @@ Codex uses progressive disclosure for skills. It starts with metadata such as `n
 
 Codex bundles system skills that are available out of the box. Common examples include:
 
-- `$plan`
 - `$skill-creator`
 - `$skill-installer`
 
@@ -68,7 +67,7 @@ Codex discovers skills from these locations:
 3. Admin skills: `/etc/codex/skills`
 4. System skills bundled with Codex
 
-Codex scans repository locations from the current working directory upward. If two skills share the same name, Codex does not merge them.
+Codex scans repository locations from the current working directory up to the repository root. Skills with the same name can both appear in the selector; use a distinct name or select the intended path.
 
 ## Distribute Skills with Plugins
 
@@ -86,7 +85,7 @@ path = "/path/to/skill/SKILL.md"
 enabled = false
 ```
 
-Restart Codex after changing skill config.
+If the active session still shows the previous configuration, restart Codex.
 
 ## Optional Metadata with `agents/openai.yaml`
 
@@ -116,3 +115,5 @@ dependencies:
 - Write `description` fields as trigger conditions, not marketing copy.
 - Use `references/` and `scripts/` to keep `SKILL.md` concise.
 - Use plugins for reusable distribution outside a single repo.
+
+See [Build skills](https://learn.chatgpt.com/docs/build-skills) for current discovery and metadata rules.

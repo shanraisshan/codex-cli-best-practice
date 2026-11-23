@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-A best practices reference repository for **Codex CLI** (v0.121.0+) and **Claude Code**, demonstrating the **Agent → Skill** orchestration pattern through a weather data system example. This is a documentation and configuration reference, not a traditional application codebase.
+A best practices reference repository for **Codex CLI** (verified on v0.171.0) and **Claude Code**, demonstrating the **Agent → Skill** orchestration pattern through a weather data system example. This is a documentation and configuration reference, not a traditional application codebase.
 
 Maintained by Shayan Raees (@shanraisshan). Companion repos: [claude-code-best-practice](https://github.com/shanraisshan/claude-code-best-practice), [codex-cli-hooks](https://github.com/shanraisshan/codex-cli-hooks), [claude-code-hooks](https://github.com/shanraisshan/claude-code-hooks).
 
@@ -12,24 +12,24 @@ Maintained by Shayan Raees (@shanraisshan). Companion repos: [claude-code-best-p
 
 The repo demonstrates four interconnected systems:
 
-1. **Config** (`.codex/config.toml`) — TOML-based layered config with 5 profiles (conservative, development, trusted, ci, review), MCP server registration, and agent definitions. Project-level overrides user-level (`~/.codex/config.toml`); CLI flags override both.
+1. **Config** (`.codex/config.toml`) — Trusted project settings with an MCP integration. Named config profiles are separate user TOML files.
 
-2. **Agents** (`.codex/agents/*.toml`) — Registered under `[agents.<name>]` in config.toml with dedicated role files. The weather-agent fetches temperature from Open-Meteo API and delegates rendering to a skill.
+2. **Agents** (`.codex/agents/*.toml`) — Standalone roles. The weather agent fetches Dubai temperature from Open-Meteo and returns it to the parent.
 
-3. **Skills** (`.agents/skills/<name>/SKILL.md`) — Reusable instruction packages with YAML frontmatter (`name`, `description`). Discovered progressively from cwd up to `/etc/codex/skills`. Invoked via `/skills`, `$skill-name`, or auto-triggered by description match.
+3. **Skills** (`.agents/skills/<name>/SKILL.md`) — Codex discovers reusable instructions and exposes them with `/skills` and `$skill-name` mentions.
 
-4. **Hooks** — Event-driven Python scripts. Claude Code has 27 hooks (`.claude/settings.json` → `.claude/hooks/scripts/hooks.py`); Codex CLI has 5 (`.codex/hooks.json`). Hooks play audio feedback per event with cross-platform support (macOS/Linux/Windows).
+4. **Hooks** — Separate examples for Claude Code (`.claude/settings.json`) and Codex CLI (`.codex/hooks.json`). The Codex example registers five events.
 
 ### Orchestration Flow
 
 ```
 User Prompt → weather-agent (fetches temp from Open-Meteo)
-                → /weather-svg-creator skill (renders SVG card)
+                → parent uses $weather-svg-creator (renders SVG card)
                     → orchestration-workflow/weather.svg
                     → orchestration-workflow/output.md
 ```
 
-Run it: `codex` then prompt "Fetch the current weather for Dubai in Celsius and create the SVG weather card output using the repo."
+Run it: `codex` then prompt "Use weather-agent to fetch the current temperature in Dubai in Celsius, then use $weather-svg-creator to create the weather card."
 
 ## Key Directories
 
@@ -37,18 +37,11 @@ Run it: `codex` then prompt "Fetch the current weather for Dubai in Celsius and 
 - `orchestration-workflow/` — Weather system example with flow diagram and generated outputs
 - `docs/SKILLS.md` — Skills system reference
 - `examples/` — Profile configs and CI/CD integration examples
-- `AGENTS.md` — Project guidance loaded hierarchically by Codex (cwd to git root, capped at 32 KiB)
+- `AGENTS.md` — Project guidance loaded from project root to working directory with a default 32 KiB project budget
 
 ## Configuration Quick Reference
 
-**Profiles** (`codex --profile <name>`):
-| Profile | Model | Sandbox | Approval |
-|---------|-------|---------|----------|
-| conservative | o4-mini | read-only | untrusted |
-| development | o4-mini | workspace-write | on-request |
-| trusted | o3 | workspace-write | never |
-| ci | o4-mini | read-only | never |
-| review | o3 | read-only | on-request |
+See [Config](best-practice/codex-config.md) for named profiles, precedence, and the CI example.
 
 ## Git Commit Convention
 

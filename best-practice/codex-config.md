@@ -11,147 +11,69 @@ A comprehensive guide to Codex CLI's TOML-based configuration system — coverin
 
 ## Settings Hierarchy
 
-Settings apply in order of precedence (highest to lowest):
+[Config precedence](https://learn.chatgpt.com/docs/config-file/config-basic#configuration-precedence), highest first:
 
-| Priority | Location | Scope | Purpose |
-|----------|----------|-------|---------|
-| 1 | CLI flags / `-c key=value` | Invocation | One-off overrides for a single run |
-| 2 | `.codex/config.toml` | Project | Team-shared defaults, profiles, MCP, agents |
-| 3 | `~/.codex/config.toml` | Global | Personal defaults across projects |
+1. CLI flags and `-c key=value` overrides
+2. Trusted project `.codex/config.toml` layers, from nearest directory to project root
+3. Named user profile selected with `--profile`
+4. Base user `$CODEX_HOME/config.toml` (normally `~/.codex/config.toml`)
+5. Cloud-managed defaults, system config, then built-in defaults
 
-## Core Configuration
-
-```toml
-# .codex/config.toml
-model = "o4-mini"
-sandbox_mode = "workspace-write"
-approval_policy = "on-request"
-```
+Managed requirements can constrain the effective settings. Keep shared project defaults in the repo, and personal model and permission choices in user config.
 
 ## Profiles
 
-Named presets under `[profiles.<name>]` — switch with `codex --profile <name>`:
+A named config profile is a separate file with ordinary top-level keys. For example, save the following as `$CODEX_HOME/development.config.toml`:
 
 ```toml
-[profiles.conservative]
-sandbox_mode = "read-only"
-approval_policy = "untrusted"
-
-[profiles.development]
 sandbox_mode = "workspace-write"
 approval_policy = "on-request"
-
-[profiles.ci]
-model = "o4-mini"
-sandbox_mode = "read-only"
-approval_policy = "never"
-
-[profiles.trusted]
-sandbox_mode = "danger-full-access"
-approval_policy = "never"
 ```
 
-Set a default profile with `profile = "conservative"` at the top level.
+```bash
+codex --profile development
+codex exec --profile development "Summarize this diff"
+```
 
-## Sandbox Modes
+Move old `[profiles.<name>]` entries into named files and remove the old top-level `profile` selector. Trusted project config can still override a profile. See [example files](../examples/profiles/) and the [profile reference](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles).
 
-| Mode | File Access | Network | Best for |
-|---|---|---|---|
-| `read-only` | Read-only project access | Blocked | Reviews, audits, CI analysis |
-| `workspace-write` | Read/write inside the workspace | Blocked | Local development and doc/code edits |
-| `danger-full-access` | Unrestricted filesystem access | Allowed | Fully trusted automation that needs network or installs |
+## Sandbox and Approvals
 
-## Approval Policies
-
-| Policy | Behavior | Best for |
+| Sandbox | Filesystem access | Typical use |
 |---|---|---|
-| `untrusted` | Auto-runs only trusted read-style commands; asks for the rest | New repos, audits, reviews |
-| `on-request` | Model decides when it should ask | Everyday development |
-| `never` | Never asks; failures come straight back to the model | Non-interactive runs and tightly controlled automation |
+| `read-only` | Read-only | Review and audit |
+| `workspace-write` | Writes within configured workspace roots, with protected paths | Local development |
+| `danger-full-access` | Unrestricted by Codex's sandbox | Environments with their own containment |
 
-## Memories (v0.119.0+)
+Network access is controlled separately by the effective sandbox or permission profile. `on-request` lets Codex request approval. `never` disables approval prompts while retaining the sandbox. Granular approval settings are available in TOML. Migrate the retired `untrusted` policy and deprecated `on-failure` setting to a supported policy.
 
-Enable the cross-session memory pipeline:
+[Named permission profiles](https://learn.chatgpt.com/docs/permissions) are a beta feature. They define filesystem and network boundaries via `[permissions.<name>]` and are selected with `default_permissions` or from `/permissions` when available. Use the permission-profile schema or the legacy sandbox settings as documented for the selected configuration.
 
-```toml
-[features]
-memories = true
+### Network Access in Permission Profiles
 
-[memories]
-use_memories      = true
-generate_memories = true
-```
-
-Full reference: [`codex-memory.md`](codex-memory.md).
-
-## Unix Socket Allowlists (macOS, v0.121.0+)
-
-Under Seatbelt, Unix sockets are denied by default. Allowlist specific paths
-per-permission-profile:
+On macOS, use a narrow Unix socket allowlist when a permitted tool needs a local socket:
 
 ```toml
 [permissions.development.network]
 enabled = true
 
 [permissions.development.network.unix_sockets]
-"/tmp/example.sock"        = "allow"
-"/var/run/myservice.sock"  = "allow"
+"/tmp/example.sock" = "allow"
 ```
 
-Paths are matched as subpath prefixes, so any socket created under an allowed
-directory is covered. Use `dangerously_allow_all_unix_sockets = true` only in
-throwaway sandboxes.
+Select the named permission profile for these settings to take effect. See [Permissions](https://learn.chatgpt.com/docs/permissions) for its filesystem and network schema.
 
-## Secure Devcontainer (v0.121.0+)
+## Shared Project Configuration
 
-Codex ships a hardened VS Code Dev Container profile for customer environments.
-It is a standalone `.devcontainer/devcontainer.secure.json` + `Dockerfile.secure`
-— not a `[profiles.*]` entry in `config.toml`:
-
-```bash
-devcontainer up --workspace-folder . \
-  --config .devcontainer/devcontainer.secure.json
-```
-
-The image installs `bubblewrap` setuid, sets `CODEX_ENABLE_FIREWALL=1`, and
-restricts egress via `OPENAI_ALLOWED_DOMAINS`. Use this when running Codex
-against untrusted code.
-
-## Override
-
-Use `AGENTS.override.md` for personal instruction overrides — loaded before `AGENTS.md`, not committed to git.
-
-## MCP Servers
-
-Declare shared integrations in the same config file:
-
-```toml
-[mcp_servers.github]
-command = "npx"
-args = ["-y", "@modelcontextprotocol/server-github"]
-env = { GITHUB_TOKEN = "$GITHUB_TOKEN" }
-```
-
-## Agents
-
-Register agents under `[agents.<name>]` and optionally point them at dedicated role files:
-
-```toml
-[agents.backend-dev]
-description = "Handles backend implementation tasks"
-config_file = "agents/backend-dev.toml"
-```
+- Declare shared integrations under `[mcp_servers.<name>]`. See [MCP](codex-mcp.md).
+- Put custom agent files in `.codex/agents/`. Use `[agents]` for shared agent settings. See [Subagents](codex-subagents.md).
+- Use `AGENTS.override.md` for temporary instructions in a directory. It takes precedence over that directory's `AGENTS.md`. See [AGENTS.md](codex-agents-md.md).
 
 ## One-Off Overrides
 
 ```bash
-codex -c model=\"o3\" -c approval_policy=\"never\" exec "summarize this diff"
+codex --model gpt-6.2-sol -c 'model_reasoning_effort="medium"'
+codex exec --sandbox read-only -c 'approval_policy="never"' "Summarize this diff"
 ```
 
-## Anti-Patterns
-
-- Using `danger-full-access` for ordinary editing tasks
-- Treating `never` as a general-purpose local default
-- Using `danger-full-access` and `never` together without a real containment boundary
-- Hardcoding secrets instead of using `$ENV_VAR` expansion
-- Mixing unrelated concerns into one profile instead of creating focused profiles
+Pick an available model for your account and provider. Use `/debug-config` to inspect the effective layers, and `--strict-config` to catch unrecognized keys in the CLI. See the [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) for supported fields.

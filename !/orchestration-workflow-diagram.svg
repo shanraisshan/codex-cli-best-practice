@@ -47,7 +47,7 @@
 
   <!-- Arrow 2: Agent -> Skill -->
   <line x1="623" y1="190" x2="688" y2="190" stroke="#666" stroke-width="2.5" marker-end="url(#arrow)"/>
-  <text x="655" y="180" text-anchor="middle" fill="#666" font-family="system-ui" font-size="11">Skill</text>
+  <text x="655" y="180" text-anchor="middle" fill="#666" font-family="system-ui" font-size="11">Via parent</text>
 
   <!-- SVG Creator Skill Box (same size as Claude Code: 280x90) -->
   <rect x="698" y="145" width="280" height="90" rx="8" fill="#9B59B6" stroke="#8E44AD" stroke-width="2.5"/>
@@ -63,6 +63,6 @@
 
   <!-- Legend -->
   <text x="600" y="407" text-anchor="middle" fill="#888" font-family="system-ui" font-size="12">
-    agents/weather-agent → skills/weather-svg-creator (skill)
+    weather-agent → parent applies weather-svg-creator
   </text>
 </svg>
